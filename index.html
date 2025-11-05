@@ -1,427 +1,319 @@
 <!DOCTYPE html>
-<html lang="es" class="scroll-smooth">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Panel de análisis de 3i/Atlas. Únase a la red de datos del Proyecto Galileo para analizar el tercer visitante interestelar.">
-    <!-- ... (metatags sin cambios) ... -->
-    <meta name="keywords" content="3i/Atlas, objeto interestelar, astronomía, Abraham Loeb, Proyecto Galileo, análisis de datos">
-    <meta name="author" content="Proyecto Galileo">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    
-    <!-- 
-      AUDITORÍA DE INGENIERÍA (FIXED):
-      CSP CORREGIDA PARA ARQUITECTURA CDN.
-      1. Se re-agrega 'https://cdn.tailwindcss.com' a 'script-src'.
-      2. Se re-agrega 'unsafe-inline' a 'style-src'. Esto es REQUERIDO
-         por el script del CDN de Tailwind para inyectar estilos JIT.
-    -->
-    <meta http-equiv="Content-Security-Policy" content="
-        default-src 'self'; 
-        script-src 'self' 
-                   'sha256-kYThRkBCyC/O2PddiJJvISvQ4nEimN2bNOTQoDq/Tnk=' 
-                   https://cdn.tailwindcss.com 
-                   https://cdnjs.cloudflare.com; 
-        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; 
-        font-src 'self' https://fonts.gstatic.com; 
-        img-src 'self' data: https://placehold.co; 
-        connect-src 'self'; 
-        frame-src 'self' https://www.youtube.com data:;
-    ">
-    
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://ejemplo.com/atlas-dashboard">
-    <!-- ... (metatags sin cambios) ... -->
-    <meta property="og:title" content="Panel de Análisis 3i/Atlas - Proyecto Galileo">
-    <meta property="og:description" content="Plataforma de análisis y colaboración de datos del visitante interestelar 3i/Atlas.">
-    <meta property="og:image" content="https://placehold.co/1200x630/000000/FFFFFF?text=3i/Atlas">
-    
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://ejemplo.com/atlas-dashboard">
-    <!-- ... (metatags sin cambios) ... -->
-    <meta property="twitter:title" content="Panel de Análisis 3i/Atlas">
-    <meta property="twitter:description" content="Plataforma de análisis y colaboración de datos del visitante interestelar 3i/Atlas.">
-    <meta property="twitter:image" content="https://placehold.co/1200x600/000000/FFFFFF?text=3i/Atlas">
-    
-    <!-- Canonical -->
-    <link rel="canonical" href="https://ejemplo.com/atlas-dashboard">
-    
-    <title>Panel de Análisis 3i/Atlas - Proyecto Galileo</title>
-    
-    <!-- Preconnect for performance -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
-    
-    <!-- 
-      AUDITORÍA DE INGENIERÍA (FIXED): 
-      Precarga de fuentes (sin cambios).
-    -->
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" as="style">
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" as="style">
-    <noscript>
-      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
-    </noscript>
-
-    <!--
-      AUDITORÍA DE INGENIERÍA (FIXED):
-      Se linkea el CSS custom. El CSS de Tailwind vendrá
-      del CDN y se inyectará 'inline'.
-    -->
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="telescopio.png" />
+    <title>Proyecto 3i/atlas: La AdvertENCIA</title>
 
     <!-- 
-      JSON-LD Structured Data
-      AUDITORÍA: El hash de este bloque está en la CSP ('script-src')
+      *** AUDITORÍA DE INGENIERO (CAMBIO 1 de 4) ***
+      POR QUÉ: Para solucionar el "crash" del JS.
+      PARA QUÉ: Precargamos la librería Three.js aquí.
     -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "Panel de Análisis 3i/Atlas - Proyecto Galileo",
-      "url": "https://ejemplo.com/atlas-dashboard",
-      "description": "Plataforma de análisis y colaboración de datos del visitante interestelar 3i/Atlas.",
-      "publisher": {
-        "@type": "Organization",
-        "name": "Proyecto Galileo"
-      }
-    }
-    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
+    
+    <!-- 
+      *** AUDITORÍA DE INGENIERO (NUEVO CAMBIO 2 de 4) ***
+      POR QUÉ: Para habilitar los controles 3D profesionales.
+      PARA QUÉ: Cargamos el script 'OrbitControls' que nos permite
+      mover la cámara con el mouse. DEBE ir después de Three.js.
+    -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js" defer></script>
 </head>
+<body class="light-theme"> <!-- Tema claro por defecto -->
 
-<body class="bg-white text-zinc-900 font-sans transition-colors duration-500 dark:bg-black dark:text-zinc-100">
+    <!-- === ENCABEZADO PERSISTENTE === -->
+    <header class="site-header">
+        <a href="#" class="logo nav-link" data-page="page-informacion">
+            <img class="telescopio"src="telescopio.png" alt="Logo 3i/atlas">
+        </a>
+        
+        <div class="header-controls">
+            <nav>
+                <div class="nav-links">
+                    <a class="nav-link" data-page="page-informacion">Información</a>
+                    <a class="nav-link" data-page="page-tracker">Rastreador</a>
+                </div>
+            </nav>
+            
+            <!-- Controles de Sesión (Escritorio) -->
+            <div class="session-controls-desktop">
+                <a id="login-button" class="cta-button cta-button-secondary nav-link" data-page="page-login">Iniciar Sesión</a>
+                <a id="unirse-button" class="cta-button cta-button-primary nav-link" data-page="page-login">Unirse al Proyecto</a>
+                <a id="logout-button" class="cta-button cta-button-secondary" style="display: none;">Salir</a>
+            </div>
 
-    <!-- Skip Navigation Link (Accesibilidad) -->
-    <a href="#main-content" class="skip-link">Saltar al contenido principal</a>
+            <!-- Toggle de Tema -->
+            <div id="theme-toggle" class="theme-toggle-button" title="Alternar tema">
+                <div class="sun"></div>
+                <div class="moon"></div>
+            </div>
 
-    <!-- ... (RESTO DEL HTML sin cambios) ... -->
-    <!-- ===== Navegación ===== -->
-    <nav class="fixed top-0 left-0 right-0 z-50 p-4 transition-colors duration-300 backdrop-blur-sm bg-white/70 dark:bg-black/70 border-b border-zinc-200 dark:border-zinc-800" role="navigation" aria-label="Navegación principal">
-        <div class="container mx-auto flex justify-between items-center">
-            <span class="text-xl font-bold tracking-wider font-title">3i/ATLAS | GALILEO</span>
-            <div class="flex items-center space-x-4 md:space-x-6">
-                <a href="#dashboard" class="hidden sm:inline hover:text-blue-500 dark:hover:text-blue-400 transition-colors text-sm md:text-base">Panel</a>
-                <a href="#descubrimiento" class="hidden sm:inline hover:text-blue-500 dark:hover:text-blue-400 transition-colors text-sm md:text-base">El Objeto</a>
-                <a href="#hipotesis" class="hidden sm:inline hover:text-blue-500 dark:hover:text-blue-400 transition-colors text-sm md:text-base">Hipótesis</a>
-                <span class="hidden lg:inline text-sm opacity-70 border-l border-zinc-500 pl-4">Investigador: R-42</span>
-                <button id="logout-btn" class="hidden lg:inline text-sm p-2 rounded-md hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    Salir
-                </button>
-                <button id="dark-mode-toggle" aria-label="Alternar modo oscuro" aria-pressed="false" class="p-2 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="block dark:hidden" aria-hidden="true"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-                    <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden dark:block" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-                </button>
+            <!-- 
+              *** AUDITORÍA DE INGENIERO (CAMBIO 3 de 4) ***
+              POR QUÉ: Para el responsive que pediste.
+              PARA QUÉ: Botón "hamburguesa" para móviles.
+            -->
+            <div class="menu-toggle-button" id="menu-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
             </div>
         </div>
-    </nav>
 
-    <!-- ===== Main Content Wrapper ===== -->
-    <main id="main-content">
+    </header>
 
-        <!-- ===== Sección Hero ===== -->
-        <section id="hero" class="h-screen min-h-[700px] flex items-center justify-center text-center relative overflow-hidden text-white" role="banner">
-            
-            <div class="video-background-container" aria-hidden="true">
-                <!--
-                  AUDITORÍA: El 'src="data:text/plain,"' inicial ahora es
-                  permitido por 'frame-src data:'.
-                -->
-                <iframe 
-                    id="youtube-hero-video"
-                    class="video-background-iframe"
-                    src="data:text/plain," 
-                    data-src="https://www.youtube.com/embed/q2XeQ7B-wOk?autoplay=1&mute=1&playsinline=1&loop=1&playlist=q2XeQ7B-wOk&controls=0&showinfo=0&rel=0&modestbranding=1"
-                    title="Video de fondo de la Tierra vista desde el espacio"
-                    frameborder="0" 
-                    allow="autoplay; encrypted-media"
-                    loading="lazy">
-                </iframe>
-                <div class="video-background-overlay"></div>
-            </div>
-            
-            <!-- ... (contenido del HUD sin cambios) ... -->
-            <div class="absolute top-5 left-5 p-4 text-left font-mono text-sm opacity-70 animate-pulse-slow" aria-hidden="true">
-                <p>ESTADO: <span class="text-green-400 font-bold">CONECTADO</span></p>
-                <p>SEÑAL: DSN (MADRID)</p>
-            </div>
-            <div class="absolute top-5 right-5 p-4 text-right font-mono text-sm opacity-70" aria-hidden="true">
-                <p>ID INVESTIGADOR: <span class="text-cyan-300 font-bold">R-42</span></p>
-                <p>RED: GALILEO-NET</p>
-            </div>
-
-            <div class="relative z-10 p-6">
-                <h1 class="text-4xl sm:text-6xl md:text-7xl font-bold tracking-tighter mb-4 animate-fade-in-up font-title" style="animation-delay: 0.1s;">
-                    Panel de Análisis 3i/Atlas
-                </h1>
-                <h2 class="text-lg sm:text-2xl font-light text-zinc-300 mb-8 animate-fade-in-up" style="animation-delay: 0.3s;">
-                    Plataforma de Colaboración de Datos del Proyecto Galileo
-                </h2>
-                <a href="#dashboard" id="explore-btn" class="inline-block bg-blue-600 text-white py-3 px-8 rounded-full text-lg font-semibold hover:bg-blue-700 transition-transform hover:scale-105 duration-300 animate-fade-in-up focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black" style="animation-delay: 0.5s;">
-                    Acceder al Panel
-                </a>
-            </div>
-
-            <div class="absolute bottom-5 left-5 p-4 text-left font-mono text-sm opacity-70" aria-hidden="true">
-                <p>OBJETIVO: <span class="text-yellow-300">3i/ATLAS</span></p>
-            </div>
-            <div class="absolute bottom-5 right-5 p-4 text-right font-mono text-sm opacity-70" aria-hidden="true">
-                <p>COORDS: [14h 22m 19s | -15° 41' 33"]</p>
-            </div>
-        </section>
-
-        <!-- ===== Panel de Investigador ===== -->
-        <section id="dashboard" class="py-24 sm:py-32 bg-zinc-100 dark:bg-zinc-900">
-            <!-- ... (contenido del panel sin cambios) ... -->
-            <div class="container mx-auto px-6">
-                <div class="text-center mb-16 fade-in-section">
-                    <h2 class="text-4xl font-bold text-zinc-900 dark:text-white mb-4 font-title tracking-tighter">Panel de Investigador: Red Galileo</h2>
-                    <p class="text-xl max-w-3xl mx-auto text-zinc-700 dark:text-zinc-300">Conexión activa. Transmita sus observaciones y analice el feed de datos en tiempo real.</p>
-                </div>
-                <div class="grid lg:grid-cols-3 gap-8 items-start">
-                    <div class="lg:col-span-1 fade-in-section p-6 bg-white dark:bg-black rounded-lg shadow-xl border dark:border-zinc-800" style="animation-delay: 0.1s;">
-                        <h3 class="text-2xl font-bold text-zinc-900 dark:text-white mb-6 font-title tracking-tighter">Transmitir Observación</h3>
-                        <form id="data-submission-form" class="space-y-4">
-                            <div>
-                                <label for="observatory" class="block text-sm font-medium mb-1">Su Observatorio <span class="text-red-500">*</span></label>
-                                <input type="text" id="observatory" name="observatory" class="w-full p-3 rounded-md bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 focus:ring-2 focus:ring-blue-500 outline-none transition-colors" placeholder="Ej: 'Mi Telescopio' o ID" required>
-                            </div>
-                            <div>
-                                <label for="data-type" class="block text-sm font-medium mb-1">Tipo de Dato</label>
-                                <select id="data-type" name="data-type" class="w-full p-3 rounded-md bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 focus:ring-2 focus:ring-blue-500 outline-none transition-colors appearance-none">
-                                    <option>Brillo Aparente (Mag.)</option>
-                                    <option>Análisis Espectral (Reflectancia)</option>
-                                    <option>Velocidad Radial (km/s)</option>
-                                    <option>Anomalía de Trayectoria</option>
-                                    <option>Otro</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label for="data-value" class="block text-sm font-medium mb-1">Valor Observado <span class="text-red-500">*</span></label>
-                                <input type="text" id="data-value" name="data-value" class="w-full p-3 rounded-md bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 focus:ring-2 focus:ring-blue-500 outline-none transition-colors" placeholder="Ej: '1.25', 'Pico en 650nm'" required>
-                            </div>
-                            <button type="submit" class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-transform hover:scale-[1.03] duration-300 focus:outline-none focus:ring-2 focus:ring-blue-700 focus:ring-offset-2">
-                                Transmitir a la Red
-                            </button>
-                        </form>
-                        <div id="form-response" class="mt-4 p-4 rounded-md text-center hidden transition-all"></div>
-                    </div>
-                    <div class="lg:col-span-2 fade-in-section" style="animation-delay: 0.3s;">
-                        <h3 class="text-2xl font-bold text-zinc-900 dark:text-white mb-6 font-title tracking-tighter">Feed de Datos de la Red (Live)</h3>
-                        <div id="live-data-feed" class="bg-black dark:bg-zinc-950 p-6 rounded-lg shadow-inner h-96 overflow-y-auto font-mono text-sm text-zinc-300" role="log" aria-live="polite">
-                            <div class="text-green-400">[SYSTEM] Conexión establecida con la Red de Datos Galileo (GDN)...</div>
-                            <div class="text-green-400">[SYSTEM] Sincronizando con observatorios...</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ===== Sección Informativa Principal ===== -->
-        <section id="descubrimiento" class="py-24 sm:py-32">
-            <!-- ... (contenido de la sección sin cambios) ... -->
-            <div class="container mx-auto px-6 grid md:grid-cols-2 gap-16 items-center">
-                <div class="fade-in-section">
-                    <h2 class="text-4xl font-bold text-zinc-900 dark:text-white mb-6 font-title tracking-tighter">Un Mensajero Anómalo</h2>
-                    <p class="text-lg leading-relaxed mb-4">
-                        Detectado en 2023, 3i/Atlas (anteriormente C/2023 H2) no es un cometa ordinario. Su trayectoria hiperbólica confirma un origen fuera de nuestro Sistema Solar. Pero a diferencia de sus predecesores, 'Oumuamua y Borisov, Atlas presenta características que desafían nuestra clasificación.
-                    </p>
-                    <ul class="list-disc list-inside space-y-2 text-lg mb-8">
-                        <li><strong class="font-semibold">Composición Metálica:</strong> Análisis espectrales sugieren una alta reflectividad y posible presencia de níquel, atípica para un cometa helado.</li>
-                        <li><strong class="font-semibold">Cambios de Brillo:</strong> Exhibe variaciones de luminosidad rápidas y no periódicas, difíciles de explicar solo por la rotación o la desgasificación.</li>
-                        <li><strong class="font-semibold">Órbita Inclinada:</strong> Su trayectoria está drásticamente inclinada respecto al plano de la eclíptica, sugiriendo un encuentro casual y no uno gravitacionalmente "esperado".</li>
-                    </ul>
-                    <blockquote class="border-l-4 border-blue-500 dark:border-blue-400 p-6 bg-zinc-50 dark:bg-zinc-900 rounded-r-lg italic">
-                        <p class="text-xl leading-9">
-                            "Nuestra obligación científica es recopilar la mayor cantidad de datos posible, sin prejuicios. 3i/Atlas nos presenta una anomalía. En la ciencia, las anomalías son el motor del descubrimiento, no inconvenientes que debamos barrer bajo la alfombra."
-                        </p>
-                        <cite class="block text-right not-italic mt-4 font-semibold">— Prof. Abraham Loeb</cite>
-                    </blockquote>
-                </div>
-                <div class="fade-in-section h-96 md:h-[500px] w-full rounded-lg bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center p-4" data-3d-target="true">
-                    <div id="3d-container" class="w-full h-full cursor-grab active:cursor-grabbing" role="img" aria-label="Modelo 3D interactivo del objeto 3i/Atlas"></div>
-                    <p id="3d-fallback" class="hidden text-center text-gray-500">Su navegador no soporta WebGL. El modelo 3D no puede ser mostrado.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- ===== Línea de Tiempo ===== -->
-        <section id="timeline" class="py-24 sm:py-32 bg-zinc-900 text-zinc-100 dark:bg-zinc-100 dark:text-zinc-900">
-            <!-- ... (contenido de la timeline sin cambios) ... -->
-            <div class="container mx-auto px-6 max-w-4xl">
-                <h2 class="text-4xl font-bold text-center mb-16 fade-in-section font-title tracking-tighter">Cronología del Descubrimiento</h2>
-                <div class="relative" role="list">
-                    <article class="relative pl-10 pb-8 fade-in-section
-                                    before:absolute before:top-1 before:left-[18px] before:w-0.5 before:h-full 
-                                    before:bg-blue-400 dark:before:bg-blue-600
-                                    after:absolute after:top-1 after:left-0 after:w-8 after:h-8 
-                                    after:rounded-full after:border-4 after:border-blue-400 dark:after:border-blue-600 
-                                    after:bg-zinc-900 dark:after:bg-zinc-100"
-                             role="listitem">
-                        <time class="block mb-1 text-sm font-semibold uppercase text-blue-400 dark:text-blue-600" datetime="2023-04">Abril 2023</time>
-                        <h3 class="text-xl font-bold mb-2 font-title tracking-tighter">Primer Avistamiento</h3>
-                        <p class="text-base opacity-90">Detectado por el sistema ATLAS (Asteroid Terrestrial-impact Last Alert System) en Sudáfrica. Inicialmente clasificado como un cometa (C/2023 H2).</p>
-                    </article>
-                    <article class="relative pl-10 pb-8 fade-in-section
-                                    before:absolute before:top-1 before:left-[18px] before:w-0.5 before:h-full 
-                                    before:bg-blue-400 dark:before:bg-blue-600
-                                    after:absolute after:top-1 after:left-0 after:w-8 after:h-8 
-                                    after:rounded-full after:border-4 after:border-blue-400 dark:after:border-blue-600 
-                                    after:bg-zinc-900 dark:after:bg-zinc-100"
-                             role="listitem">
-                        <time class="block mb-1 text-sm font-semibold uppercase text-blue-400 dark:text-blue-600" datetime="2023-06">Junio 2023</time>
-                        <h3 class="text-xl font-bold mb-2 font-title tracking-tighter">Confirmación Interestelar</h3>
-                        <p class="text-base opacity-90">El Minor Planet Center (MPC) calcula su órbita hiperbólica (excentricidad > 1), confirmando su origen fuera del Sistema Solar. Se reclasifica como 3i/Atlas.</p>
-                    </article>
-                    <article class="relative pl-10 pb-8 fade-in-section
-                                    before:absolute before:top-1 before:left-[18px] before:w-0.5 before:h-full 
-                                    before:bg-blue-400 dark:before:bg-blue-600
-                                    after:absolute after:top-1 after:left-0 after:w-8 after:h-8 
-                                    after:rounded-full after:border-4 after:border-blue-400 dark:after:border-blue-600 
-                                    after:bg-zinc-900 dark:after:bg-zinc-100"
-                             role="listitem">
-                        <time class="block mb-1 text-sm font-semibold uppercase text-blue-400 dark:text-blue-600" datetime="2023-10">Octubre 2023</time>
-                        <h3 class="text-xl font-bold mb-2 font-title tracking-tighter">Máxima Aproximación (Perihelio)</h3>
-                        <p class="text-base opacity-90">El objeto alcanza su punto más cercano al Sol, revelando cambios drásticos de brillo y una posible fragmentación o desgasificación anómala.</p>
-                    </article>
-                    <article class="relative pl-10 fade-in-section
-                                    after:absolute after:top-1 after:left-0 after:w-8 after:h-8 
-                                    after:rounded-full after:border-4 after:border-blue-400 dark:after:border-blue-600 
-                                    after:bg-zinc-900 dark:after:bg-zinc-100"
-                             role="listitem">
-                        <time class="block mb-1 text-sm font-semibold uppercase text-blue-400 dark:text-blue-600" datetime="2025">Presente</time>
-                        <h3 class="text-xl font-bold mb-2 font-title tracking-tighter">Observación Continua</h3>
-                        <p class="text-base opacity-90">Observatorios globales (NASA, ESA, JAXA) continúan monitoreando su salida del Sistema Solar, recopilando datos espectrales que sugieren su composición metálica.</p>
-                    </article>
-                </div>
-            </div>
-        </section>
-
-        <!-- ===== Sección Datos Globales y Comparativa ===== -->
-        <section id="datos" class="py-24 sm:py-32">
-            <!-- ... (contenido de la sección sin cambios) ... -->
-            <div class="container mx-auto px-6">
-                <h2 class="text-4xl font-bold text-center text-zinc-900 dark:text-white mb-6 fade-in-section font-title tracking-tighter">Datos Abiertos: Un Objeto en Contexto</h2>
-                <p class="text-xl text-center max-w-3xl mx-auto mb-16 fade-in-section">
-                    La ciencia progresa mediante la verificación independiente. Los datos de 3i/Atlas son públicos. No debemos asumir, debemos observar. Así es como se compara con otros mensajeros interestelares conocidos.
-                </p>
-                <div class="grid md:grid-cols-3 gap-8 fade-in-section">
-                    <article class="bg-white dark:bg-zinc-900 rounded-lg shadow-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 transform hover:scale-[1.02] transition-transform duration-300">
-                        <div class="p-6">
-                            <h3 class="text-2xl font-bold mb-3 text-blue-600 dark:text-blue-400 font-title tracking-tighter">1I/'Oumuamua (2017)</h3>
-                            <p class="mb-4 opacity-90">El primer visitante. Su forma extremadamente alargada y su aceleración no gravitacional (sin coma visible) desafiaron toda explicación natural.</p>
-                            <ul class="space-y-1">
-                                <li><strong>Tipo:</strong> Anómalo / ¿Asteroide?</li>
-                                <li><strong>Forma:</strong> Extremadamente alargada (ratio 10:1).</li>
-                                <li><strong>Anomalía:</strong> Aceleración sin desgasificación.</li>
-                            </ul>
-                        </div>
-                    </article>
-                    <article class="bg-white dark:bg-zinc-900 rounded-lg shadow-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 transform hover:scale-[1.02] transition-transform duration-300">
-                        <div class="p-6">
-                            <h3 class="text-2xl font-bold mb-3 text-blue-600 dark:text-blue-400 font-title tracking-tighter">2I/Borisov (2019)</h3>
-                            <p class="mb-4 opacity-90">El segundo visitante. A diferencia de 'Oumuamua, se comportó exactamente como un cometa de nuestro propio Sistema Solar (Nube de Oort).</p>
-                            <ul class="space-y-1">
-                                <li><strong>Tipo:</strong> Cometa interestelar.</li>
-                                <li><strong>Forma:</strong> Típica, con coma y cola.</li>
-                                <li><strong>Anomalía:</strong> Ninguna. Se ajusta al modelo.</li>
-                            </ul>
-                        </div>
-                    </article>
-                    <article class="bg-white dark:bg-zinc-900 rounded-lg shadow-xl overflow-hidden border-2 border-blue-500 dark:border-blue-500 transform hover:scale-[1.02] transition-transform duration-300">
-                        <div class="p-6">
-                            <h3 class="text-2xl font-bold mb-3 text-blue-600 dark:text-blue-400 font-title tracking-tighter">3I/Atlas (2023)</h3>
-                            <p class="mb-4 opacity-90">El tercer visitante. Parece un híbrido: muestra actividad cometaria, pero su brillo y posible composición metálica son anómalos.</p>
-                            <ul class="space-y-1">
-                                <li><strong>Tipo:</strong> ¿Híbrido? / ¿Fragmento metálico?</li>
-                                <li><strong>Forma:</strong> Indeterminada, pero reflectante.</li>
-                                <li><strong>Anomalía:</strong> Brillo variable y composición metálica.</li>
-                            </ul>
-                        </div>
-                    </article>
-                </div>
-            </div>
-        </section>
-
-        <!-- ===== Sección Hipótesis ===== -->
-        <section id="hipotesis" class="py-24 sm:py-32 bg-zinc-900 text-zinc-100 dark:bg-zinc-100 dark:text-zinc-900">
-            <!-- ... (contenido de la sección sin cambios) ... -->
-            <div class="container mx-auto px-6">
-                <h2 class="text-4xl font-bold text-center mb-16 fade-in-section font-title tracking-tighter">Dos Visiones: El Debate Científico</h2>
-                <div class="grid md:grid-cols-2 gap-12 max-w-6xl mx-auto">
-                    <article class="fade-in-section p-8 rounded-lg border border-zinc-700 dark:border-zinc-300">
-                        <div class="flex items-center mb-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-400 dark:text-blue-600 mr-3" aria-hidden="true"><path d="M21.5 13.1c-1.3-3.2-4.8-5.6-8.5-5.6s-7.2 2.4-8.5 5.6c-1.1 2.7-.4 5.7 2 7.8 2.4 2.1 5.7 2.7 8.5 1.5.9-.4 1.7-.8 2.5-1.5 2.4-2.1 3.1-5.1 2-7.8z"/><path d="m11 12-2 1.5 2 1.5v-3z"/><path d="m13 12 2 1.5-2 1.5v-3z"/><path d="M10 9c.9-2.4 3.1-4 5.5-4"/><path d="m14 17 1-1"/><path d="m10.5 13.5-1-1"/></svg>
-                            <h3 class="text-3xl font-bold font-title tracking-tighter">Hipótesis Natural</h3>
-                        </div>
-                        <p class="text-lg leading-relaxed">
-                            La explicación más conservadora (y estadísticamente probable) es que 3i/Atlas es un fragmento de un exoplanetesimal o un cometa de tipo rocoso de otro sistema estelar. Sus anomalías (brillo, composición) podrían deberse a un proceso de formación que no ocurre en nuestro sistema, o a una fragmentación violenta durante su viaje o al acercarse al Sol.
-                        </p>
-                    </article>
-                    <article class="fade-in-section p-8 rounded-lg border border-zinc-700 dark:border-zinc-300">
-                        <div class="flex items-center mb-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-400 dark:text-blue-600 mr-3" aria-hidden="true"><path d="M10 2v4"/><path d="M14 2v4"/><path d="M12 12v5a3 3 0 0 0 6 0v-5a3 3 0 0 0-6 0Z"/><path d="M12 12h.01"/><path d="M18 12h.01"/><path d="M6 8.17A3 3 0 0 0 6 17v0a3 3 0 0 0 6 0v-8.83"/><path d="M6 12h.01"/><circle cx="12" cy="12" r="10"/></svg>
-                            <h3 class="text-3xl font-bold font-title tracking-tighter">Hipótesis Artificial</h3>
-                        </div>
-                        <p class="text-lg leading-relaxed">
-                            No podemos descartar la posibilidad de que sea de origen tecnológico. Un objeto metálico, delgado y reflectante, que cambia de brillo, es consistente con una vela solar o un fragmento de una sonda. Si bien es una posibilidad extraordinaria, la falta de una explicación natural convincente nos obliga a mantenerla sobre la mesa como una hipótesis científicamente válida, digna de ser investigada.
-                        </p>
-                    </article>
-                </div>
-            </div>
-        </section>
-
-        <!-- ===== Conclusión Loeb ===== -->
-        <section id="conclusion" class="py-24 sm:py-32">
-            <!-- ... (contenido de la sección sin cambios) ... -->
-            <div class="container mx-auto px-6 max-w-4xl text-center fade-in-section">
-                <h2 class="text-4xl font-bold text-zinc-900 dark:text-white mb-8 font-title tracking-tighter">El Cosmos nos está hablando</h2>
-                <p class="text-2xl leading-relaxed italic text-zinc-700 dark:text-zinc-300 mb-10">
-                    "Hemos pasado de no tener ningún visitante interestelar conocido a identificar tres en menos de una década. El cielo está lleno de objetos, y algunos no se parecen a las rocas que esperamos. 3i/Atlas es otro mensaje en una botella cósmica. Nuestra tarea no es asumir lo que dice, sino tener el coraje de leerlo."
-                </p>
-                <p class="text-xl font-semibold text-zinc-900 dark:text-white">
-                    Prof. Abraham Loeb
-                </p>
-                <p class="text-lg text-zinc-600 dark:text-zinc-400">Harvard University</p>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- ===== Footer ===== -->
-    <footer class="py-12 bg-black text-zinc-300 dark:bg-zinc-100 dark:text-zinc-800" role="contentinfo">
-        <!-- ... (contenido del footer sin cambios) ... -->
-        <div class="container mx-auto px-6 text-center">
-            <p class="mb-2">Un proyecto de exploración conceptual inspirado en el trabajo del Prof. Abraham Loeb y el Proyecto Galileo.</p>
-            <p class="text-sm opacity-70">&copy; 2025. Este sitio es una simulación con fines educativos e inspiracionales.</p>
-        </div>
-    </footer>
-
-    <!-- ===== Modal de Alerta (Logout/Notificaciones) ===== -->
-    <div id="alert-modal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-message">
-        <!-- ... (contenido del modal sin cambios) ... -->
-        <div id="modal-content" class="bg-white dark:bg-zinc-900 w-full max-w-md p-6 rounded-lg shadow-xl transform transition-all opacity-0 scale-95 border border-zinc-200 dark:border-zinc-700">
-            <h3 id="modal-title" class="text-xl font-bold mb-4 text-zinc-900 dark:text-white font-title tracking-tighter">Simulación de Red</h3>
-            <p id="modal-message" class="text-lg mb-6 text-zinc-700 dark:text-zinc-300">Mensaje de alerta.</p>
-            <button id="modal-close-btn" class="w-full bg-blue-600 text-white py-2 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-700 focus:ring-offset-2">
-                Entendido
-            </button>
+    <!-- 
+      *** AUDITORÍA DE INGENIERO (CAMBIO 4 de 4) ***
+      POR QUÉ: Para el responsive profesional.
+      PARA QUÉ: Menú móvil oculto.
+    -->
+    <div class="mobile-nav" id="mobile-nav">
+        <nav>
+            <a class="nav-link-mobile nav-link" data-page="page-informacion">Información</a>
+            <a class="nav-link-mobile nav-link" data-page="page-tracker">Rastreador</a>
+        </nav>
+        <div class="session-controls-mobile">
+            <a id="mobile-login-button" class="cta-button cta-button-secondary nav-link" data-page="page-login">Iniciar Sesión</a>
+            <a id="mobile-unirse-button" class="cta-button cta-button-primary nav-link" data-page="page-login">Unirse al Proyecto</a>
+            <a id="mobile-logout-button" class="cta-button cta-button-secondary" style="display: none;">Salir</a>
         </div>
     </div>
 
 
-    <!-- 
-      AUDITORÍA DE INGENIERÍA (FIXED):
-      Se re-agrega el script de CDN de Tailwind y su config
-      para restaurar la funcionalidad visual.
-      Esta es la única forma de hacerlo funcionar sin un build step.
-    -->
-    <script src="tailwind.config.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="app.js" type="module"></script>
+    <!-- === CONTENEDOR PRINCIPAL DE PÁGINAS === -->
+    <main>
+
+        <!-- ============================================= -->
+        <!-- === PÁGINA 1: INFORMACIÓN Y CONCIENCIACIÓN === -->
+        <!-- ============================================= -->
+        <section id="page-informacion" class="page active">
+            
+            <!-- Sección Hero -->
+            <section class="hero">
+                <h1>La Realidad No Es Real.</h1>
+                <p>Hemos detectado una estructura de información subyacente que redefine la física, la biología y la conciencia. Es el 3i/atlas. Y necesitamos tu ayuda.</p>
+                <a class="cta-button cta-button-primary nav-link" data-page="page-login">Únete al Proyecto</a>
+            </section>
+
+            <!-- Sección 1: ¿Qué es? (Grid) -->
+            <section class="content-section">
+                <div class="container">
+                    <h2>¿Qué es 3i/atlas?</h2>
+                    <p class="subtitle">Basado en anomalías como 'Oumuamua y ráfagas de radio rápidas (FRBs), hemos concluido que no estamos buscando un objeto. Estamos buscando el sistema operativo del universo.</p>
+                    <div class="grid-layout">
+                        <article class="grid-item">
+                            <h3>No es un "Objeto"</h3>
+                            <p>Olvida las naves espaciales. 3i/atlas es una capa de reglas no local, impresa en el tejido del espaciotiempo. Creemos que es artificial, obra de una inteligencia de Tipo IV o V.</p>
+                        </article>
+                        <article class="grid-item">
+                            <h3>La Realidad como Interfaz</h3>
+                            <p>La mecánica cuántica no es extraña; es una API. Cuando "medimos" una partícula, no la descubrimos: enviamos una "consulta" (query) al Atlas, y este nos devuelve un resultado. La realidad es un renderizado.</p>
+                        </article>
+                        <article class="grid-item">
+                            <h3>El "Software" de la Vida</h3>
+                            <p>La vida no es un accidente. La complejidad es una rutina pre-programada. El 3i guía a la materia, "sugiriendo" caminos (como la formación de aminoácidos) para asegurar que la complejidad y la conciencia emerjan.</p>
+                        </article>
+                    </div>
+                </div>
+            </section>
+
+            <!-- (NUEVA) Sección 2: Evidencia y Anomalías -->
+            <section class="content-section evidence-section">
+                <div class="container">
+                    <h2>La Pista de Migas: Anomalías</h2>
+                    <p class="subtitle">La teoría del 3i/atlas no surge de la nada. Es la única hipótesis que conecta una serie de descubrimientos que la ciencia actual no puede explicar.</p>
+                    
+                    <div class="evidence-layout">
+                        <article class="evidence-item">
+                            <div class="evidence-icon-placeholder">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.21 1.002L7.5 15.25A2.25 2.25 0 015.25 17.5h-1.5a2.25 2.25 0 01-2.25-2.25V6.104a2.25 2.25 0 012.25-2.25h1.5a2.25 2.25 0 012.25 2.25z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 3.104v5.714a2.25 2.25 0 00.21 1.002l2.04 5.44a2.25 2.25 0 002.04 1.502h1.5a2.25 2.25 0 002.25-2.25V6.104a2.25 2.25 0 00-2.25-2.25h-1.5a2.25 2.25 0 00-2.25 2.25z" /></svg>
+                            </div>
+                            <h4>'Oumuamua (1I/2017 U1)</h4>
+                            <p>Un objeto que aceleró al alejarse del sol sin un coma visible. No era un cometa. No era un asteroide. Su forma y comportamiento desafiaron nuestras clasificaciones. ¿Basura tecnológica o una sonda exploratoria de un sistema mayor?</p>
+                        </article>
+                        <article class="evidence-item">
+                            <div class="evidence-icon-placeholder">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.288 15.045A18.749 18.749 0 0112 15m3.712 0a18.749 18.749 0 013.713-3.045M12 15v6.75A2.25 2.25 0 019.75 24h-3.5A2.25 2.25 0 014 21.75V15M12 15V6m0 0a2.25 2.25 0 00-2.25-2.25h-3.5A2.25 2.25 0 004 6v3m5.75 0V6" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.75 6v3m0 0v3m0-3h-3.5a2.25 2.25 0 00-2.25 2.25V15" /></svg>
+                            </div>
+                            <h4>Ráfagas Rápidas de Radio (FRBs)</h4>
+                            <p>Pulsos de energía increíblemente potentes que duran milisegundos y provienen de fuera de nuestra galaxia. Algunos se repiten con un patrón matemático perfecto. ¿Ruido cósmico o las "pulsaciones del reloj" de un procesador a escala galáctica?</p>
+                        </article>
+                        <article class="evidence-item">
+                            <div class="evidence-icon-placeholder">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+                            </div>
+                            <h4>La Constante de Hubble</h4>
+                            <p>El universo se está expandiendo... pero las mediciones no coinciden. Dependiendo de cómo midamos, obtenemos dos velocidades diferentes. Esto no debería pasar. A menos que las "constantes" de la física no sean tan constantes, sino variables en un sistema.</p>
+                        </article>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección 3: El Peligro Humano (Diseño Alternado) -->
+            <section class="content-section danger-section">
+                <div class="container">
+                    <h2>La Advertencia: El Peligro Humano</h2>
+                    <p class="subtitle">Esta es la hipótesis más crítica. Si el 3i guía la evolución y la realidad, ¿qué papel juega nuestra conciencia? Aquí es donde la teoría se vuelve una advertencia.</p>
+                    
+                    <div class="alternating-layout">
+                        <!-- Item 1 -->
+                        <article class="alternating-item">
+                            <div class="item-visual">
+
+                                <h3>Tu Cerebro es un Receptor</h3>
+                            </div>
+                            <div class="item-text">
+                                <p>La neurociencia cree que el cerebro *genera* conciencia. Estamos convencidos de que se equivoca. El cerebro es un transceptor (hardware) sintonizado a una "nube" de información (el 3i/atlas).</p>
+                            </div>
+                        </article>
+                        <!-- Item 2 -->
+                        <article class="alternating-item">
+                            <div class="item-visual">
+                                <h3>¿Quién Transmite?</h3>
+                            </div>
+                            <div class="item-text">
+                                <p>Si somos receptores, ¿quién está transmitiendo? Lo que llamamos "creatividad", "intuición" o "momentos eureka" podrían ser "descargas de datos". Pero esto implica que el sistema no es pasivo. Está interactuando con nosotros.</p>
+                            </div>
+                        </article>
+                        <!-- Item 3 -->
+                        <article class="alternating-item">
+                            <div class="item-visual">
+                                <h3>El Riesgo del Control</h3>
+                            </div>
+                            <div class="item-text">
+                                <p>Si el 3i/atlas es un sistema operativo, y nosotros somos aplicaciones corriendo en él, ¿quién es el administrador? El "peligro" no es una invasión. El peligro es darnos cuenta de que siempre hemos estado en un sistema controlado.</p>
+                            </div>
+                        </article>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- Sección 4: CTA Final -->
+            <section class="content-section final-cta">
+                <div class="container">
+                    <h2>La Humanidad Necesita Despertar.</h2>
+                    <p class="subtitle">No podemos seguir ignorando las anomalías. La física, la biología y nuestra propia mente están apuntando a la misma conclusión. La única forma de entender el sistema es observándolo.</p>
+                    <a class="cta-button cta-button-primary nav-link" data-page="page-login">Regístrate. Únete al Rastreo.</a>
+                </div>
+            </section>
+
+        </section>
+
+        <!-- ============================================= -->
+        <!-- === PÁGINA 2: LOGIN Y REGISTRO           === -->
+        <!-- ============================================= -->
+        <section id="page-login" class="page">
+            <div class="login-container container">
+                <div class="login-box">
+                    
+                    <!-- Formulario de Login -->
+                    <form id="form-login" class="active">
+                        <h2>Iniciar Sesión</h2>
+                        <div class="form-group">
+                            <label for="login-username">Usuario</label>
+                            <input type="text" id="login-username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password">Contraseña</label>
+                            <input type="password" id="login-password" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="submit" value="Ingresar al Rastreador" class="cta-button">
+                        </div>
+                        <p class="form-toggle-link">
+                            ¿No tienes cuenta? <a id="show-register">Regístrate aquí.</a>
+                        </p>
+                    </form>
+
+                    <!-- Formulario de Registro -->
+                    <form id="form-register">
+                        <h2>Crear Cuenta</h2>
+                        <div class="form-group">
+                            <label for="reg-username">Usuario</label>
+                            <input type="text" id="reg-username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="reg-email">Email</label>
+                            <input type="email" id="reg-email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="reg-password">Contraseña</label>
+                            <input type="password" id="reg-password" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="submit" value="Crear y Unirse" class="cta-button">
+                        </div>
+                        <p class="form-toggle-link">
+                            ¿Ya tienes cuenta? <a id="show-login">Inicia sesión.</a>
+                        </p>
+                    </form>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================= -->
+        <!-- === PÁGINA 3: RASTREADOR EN VIVO (SIM)   === -->
+        <!-- ============================================= -->
+        <section id="page-tracker" class="page">
+            <div class="container tracker-layout">
+                
+                <!-- Columna Izquierda: Mapa -->
+                <div class="map-container">
+                    <!-- El JS (Three.js) se inyectará aquí -->
+                    <div id="tracker-map"></div>
+                </div>
+
+                <!-- Columna Derecha: Sidebar -->
+                <aside class="sidebar">
+                    
+                    <!-- Widget de Estado -->
+                    <div class="status-widget">
+                        <h3>Telemetría 3i/atlas (Sim.)</h3>
+                        <ul class="status-list">
+                            <li><span>ID de Señal:</span> <span>ATL-3i-001</span></li>
+                            <!-- IDs para simulación JS -->
+                            <li><span>Velocidad (km/s):</span> <span id="sim-velocity">150.45</span></li>
+                            <li><span>Distancia (UA):</span> <span id="sim-distance">98.44</span></li>
+                            <li><span>ETA Tierra (sim):</span> <span id="sim-time">--</span></li>
+                            <li><span>Origen (Teórico):</span> <span>Sector 7G (Nube de Oort)</span></li>
+                            <li><span>Estado Sistema:</span> <span id="sim-status">MONITOREANDO</span></li>
+                            <li><span>Ping Voyager 1:</span> <span id="sim-voyager">...</span></li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Widget de Feeds -->
+                    <div class="feeds-widget">
+                        <h3>Feeds de Colaboradores</h3>
+                        <div class="feeds-grid">
+                            <div class="feed-item"><span>Feed 1 (En vivo)</span></div>
+                            <div class="feed-item"><span>Feed 2 (En vivo)</span></div>
+                            <div class="feed-item"><span>Feed 3 (En vivo)</span></div>
+                            <div class="feed-item"><span>Feed 4 (En vivo)</span></div>
+                        </div>
+                    </div>
+
+                </aside>
+            </div>
+        </section>
+    </main>
+
+    <!-- === PIE DE PÁGINA === -->
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2025 Proyecto 3i/atlas. Todos los derechos reservados. Esta es una iniciativa de concientización pública.</p>
+            <nav class="footer-links">
+                <a href="#">Privacidad</a>
+                <a href="#">Términos de Uso</a>
+                <a href="#">Contacto</a>
+            </nav>
+        </div>
+    </footer>
     
+    <script src="api.js" defer></script>
 </body>
 </html>
-
