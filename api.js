@@ -1,741 +1,624 @@
-/**
- * PANEL 3i/ATLAS - APLICACIÓN PRINCIPAL (VERSIÓN PRODUCCIÓN)
- * Optimizado para CSP estricta, sin errores de consola, con fallback WebGL robusto
- */
+/* ---
+Proyecto 3i/atlas: Script Principal de la Aplicación
+Versión: 2.3 (Auditoría de Ingeniería - FIX VISOR 3D)
+Ingeniero: (Tu Nombre/Proyecto)
+Foco: Corrección de visibilidad 3D, Implementación de OrbitControls.
+--- */
 
-(function() {
-    'use strict';
+document.addEventListener("DOMContentLoaded", () => {
 
-    // ============================================
-    // CONFIGURACIÓN
-    // ============================================
-    const CONFIG = {
-        RESIZE_DEBOUNCE_MS: 250,
-        UPDATE_INTERVAL_MS: 5000,
-        MAX_UPDATES_VISIBLE: 15,
-        OBSERVER_THRESHOLD: 0.1,
-        THREE_JS_CDN: 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',
-        THEME_STORAGE_KEY: 'theme'
-    };
+    // --- CONSTANTES Y CONFIGURACIÓN ---
+    const G_SHEET_APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxabjy4eJxZoL1qSewLRfKqvI4tn0EopsEimZhAZydmh4OA8c9Ya1gR6IH1jHHouWvv/exec';
 
-    // ============================================
-    // MÓDULO: Gestión del Modelo 3D con Three.js
-    // ============================================
-    const ThreeDModule = (() => {
-        let scene, camera, renderer, object3D, stars;
-        let container, fallbackCanvas;
-        let isInitialized = false;
-        let isAnimating = false;
-        let animationFrameId = null;
-        let fallbackContext = null;
-        let fallbackRotation = 0;
+    // --- ESTADO DE LA APLICACIÓN (Ingeniería) ---
+    let isLoggedIn = false;
+    let trackerInitialized = false;
+    let simulationInterval = null;
+    
+    // --- VARIABLES 3D (Declaradas aquí, inicializadas en startThreeJSScene) ---
+    let scene, camera, renderer, starField;
+    let nucleus, coma, tailParticles;
+    let orbit;
+    let sunLight;
+    let clock;
+    
+    /* *** AUDITORÍA DE INGENIERO (NUEVA VARIABLE 3D) ***
+      POR QUÉ: Para los controles de cámara.
+      PARA QUÉ: Esta variable manejará la instancia de OrbitControls.
+    */
+    let controls; 
 
-        async function loadThreeJS() {
-            if (window.THREE) return true;
-            return new Promise((resolve, reject) => {
+    // --- SELECTORES DEL DOM (Caché de elementos para performance) ---
+    const navLinks = document.querySelectorAll('.nav-link');
+    const pages = document.querySelectorAll('.page');
+    
+    // Selectores de Login/Sesión
+    const showLoginLink = document.getElementById('show-login');
+    const showRegisterLink = document.getElementById('show-register');
+    const formLogin = document.getElementById('form-login');
+    const formRegister = document.getElementById('form-register');
+    
+    // Selectores de botones de sesión (Escritorio)
+    const loginButton = document.getElementById('login-button');
+    const unirseButton = document.getElementById('unirse-button');
+    const logoutButton = document.getElementById('logout-button');
+
+    // Selectores del Rastreador
+    const trackerMapContainer = document.getElementById('tracker-map');
+    const simVelocity = document.getElementById('sim-velocity');
+    const simDistance = document.getElementById('sim-distance');
+    const simTime = document.getElementById('sim-time');
+    const simStatus = document.getElementById('sim-status');
+    const simVoyager = document.getElementById('sim-voyager');
+
+    // Selector de Tema
+    const themeToggleButton = document.getElementById('theme-toggle');
+
+    // Selectores del Menú Móvil
+    const menuToggleButton = document.getElementById('menu-toggle');
+    const mobileNav = document.getElementById('mobile-nav');
+    const mobileLoginButton = document.getElementById('mobile-login-button');
+    const mobileUnirseButton = document.getElementById('mobile-unirse-button');
+    const mobileLogoutButton = document.getElementById('mobile-logout-button');
+
+
+    // --- NÚCLEO DE LA APLICACIÓN (SPA) ---
+    function navigateTo(pageId) {
+        mobileNav.classList.remove('active');
+
+        // --- LÓGICA DE SEGURIDAD (GATING) ---
+        if (pageId === 'page-tracker' && !isLoggedIn) {
+            console.warn("Acceso denegado. Se requiere inicio de sesión.");
+            alert("Debes iniciar sesión para acceder al Rastreador.");
+            pageId = 'page-login';
+        }
+        
+        // 1. Oculta todas las páginas
+        pages.forEach(page => page.classList.remove('active'));
+
+        // 2. Muestra la página objetivo
+        const targetPage = document.getElementById(pageId);
+        if (targetPage) {
+            targetPage.classList.add('active');
+        }
+
+        // 3. Scroll al inicio
+        window.scrollTo(0, 0);
+
+        // 4. Lógica específica de la página
+        if (pageId === 'page-tracker') {
+            if (!trackerInitialized) {
+                initTrackerMap();
+            }
+            startSimulation();
+        } else {
+            stopSimulation();
+        }
+
+        // 5. Manejo de formularios de login
+        if (pageId === 'page-login') {
+            formRegister.classList.remove('active');
+            formLogin.classList.add('active');
+        }
+    }
+
+    // --- MÓDULO DE ANIMACIÓN (Intersection Observer) ---
+    function initScrollAnimations() {
+        const sections = document.querySelectorAll('.content-section');
+        const options = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries, obs) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    obs.unobserve(entry.target);
+                }
+            });
+        }, options);
+
+        sections.forEach(section => {
+            observer.observe(section);
+        });
+    }
+
+    // --- MÓDULO DE SESIÓN Y AUTENTICACIÓN ---
+    function updateHeaderUI(loggedIn) {
+        isLoggedIn = loggedIn;
+        
+        if (loggedIn) {
+            // Escritorio
+            loginButton.style.display = 'none';
+            unirseButton.style.display = 'none';
+            logoutButton.style.display = 'inline-block';
+            // Móvil
+            mobileLoginButton.style.display = 'none';
+            mobileUnirseButton.style.display = 'none';
+            mobileLogoutButton.style.display = 'inline-block';
+        } else {
+            // Escritorio
+            loginButton.style.display = 'inline-block';
+            unirseButton.style.display = 'inline-block';
+            logoutButton.style.display = 'none';
+            // Móvil
+            mobileLoginButton.style.display = 'inline-block';
+            mobileUnirseButton.style.display = 'inline-block';
+            mobileLogoutButton.style.display = 'none';
+        }
+    }
+
+    function handleLogout() {
+        updateHeaderUI(false);
+        navigateTo('page-informacion');
+        console.log("Sesión cerrada.");
+    }
+
+    async function handleRegister(e) {
+        e.preventDefault();
+        const submitButton = formRegister.querySelector('input[type="submit"]');
+        submitButton.value = 'Procesando...';
+        submitButton.disabled = true;
+
+        const formData = new FormData();
+        formData.append('action', 'register');
+        formData.append('username', document.getElementById('reg-username').value);
+        formData.append('email', document.getElementById('reg-email').value);
+        formData.append('password', document.getElementById('reg-password').value);
+
+        try {
+            const response = await fetch(G_SHEET_APP_SCRIPT_URL, {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+            if (result.status === 'success') {
+                console.log("Registro exitoso.");
+                updateHeaderUI(true);
+                navigateTo('page-tracker');
+            } else {
+                alert(`Error: ${result.message}`);
+            }
+        } catch (error) {
+            console.error('Error en fetch de registro:', error);
+            alert('Error de conexión. No se pudo contactar al servidor.');
+        } finally {
+            submitButton.value = 'Crear y Unirse';
+            submitButton.disabled = false;
+        }
+    }
+
+    async function handleLogin(e) {
+        e.preventDefault();
+        const submitButton = formLogin.querySelector('input[type="submit"]');
+        submitButton.value = 'Verificando...';
+        submitButton.disabled = true;
+
+        const formData = new FormData();
+        formData.append('action', 'login');
+        formData.append('username', document.getElementById('login-username').value);
+        formData.append('password', document.getElementById('login-password').value);
+
+        try {
+            const response = await fetch(G_SHEET_APP_SCRIPT_URL, {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+            if (result.status === 'success') {
+                console.log("Login exitoso.");
+                updateHeaderUI(true);
+                navigateTo('page-tracker');
+            } else {
+                alert(`Error: ${result.message}`);
+            }
+        } catch (error) {
+            console.error('Error en fetch de login:', error);
+            alert('Error de conexión. No se pudo contactar al servidor.');
+        } finally {
+            submitButton.value = 'Ingresar al Rastreador';
+            submitButton.disabled = false;
+        }
+    }
+
+    // --- MÓDULO DE TEMA (Dark/Light) ---
+    function initThemeToggle() {
+        themeToggleButton.addEventListener('click', () => {
+            document.body.classList.toggle('dark-theme');
+            localStorage.setItem('theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light');
+        });
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-theme');
+        } else {
+            document.body.classList.add('light-theme');
+        }
+    }
+
+
+    // --- MÓDULO DEL RASTREADOR (Three.js) ---
+
+    function initTrackerMap() {
+        // Doble chequeo de ingeniero: que 'THREE' exista (librería base)
+        // y que 'THREE.OrbitControls' exista (el script de controles).
+        if (typeof THREE === 'undefined' || typeof THREE.OrbitControls === 'undefined') {
+            console.warn('Three.js o OrbitControls no están cargados. Reintentando...');
+            
+            // Si falta OrbitControls pero Three.js existe, solo carga OrbitControls
+            if (typeof THREE !== 'undefined' && typeof THREE.OrbitControls === 'undefined') {
+                const controlsScript = document.createElement('script');
+                controlsScript.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js';
+                document.head.appendChild(controlsScript);
+                controlsScript.onload = startThreeJSScene;
+                controlsScript.onerror = () => console.error('Error fatal: No se pudo cargar OrbitControls.');
+            } else {
+                // Si falta todo, carga todo (esto es un fallback de la carga del HTML)
                 const script = document.createElement('script');
-                script.src = CONFIG.THREE_JS_CDN;
-                script.async = true;
-                script.crossOrigin = 'anonymous';
-                script.onload = () => resolve(true);
-                script.onerror = () => reject(new Error('Failed to load Three.js'));
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
                 document.head.appendChild(script);
-            });
-        }
-
-        /**
-         * CORRECCIÓN: Geometría compatible con Three.js r128
-         * Reemplaza CapsuleGeometry (no disponible) con combinación de cilindro + esferas
-         */
-        function createAnomalousGeometry() {
-            const group = new THREE.Group();
-            
-            // Cuerpo central (cilindro)
-            const cylinderGeometry = new THREE.CylinderGeometry(0.4, 0.4, 1.8, 32);
-            const bodyMesh = new THREE.Mesh(cylinderGeometry);
-            
-            // Esferas en los extremos para simular cápsula
-            const sphereGeometry = new THREE.SphereGeometry(0.4, 16, 16);
-            const topSphere = new THREE.Mesh(sphereGeometry);
-            topSphere.position.y = 0.9;
-            const bottomSphere = new THREE.Mesh(sphereGeometry);
-            bottomSphere.position.y = -0.9;
-            
-            group.add(bodyMesh);
-            group.add(topSphere);
-            group.add(bottomSphere);
-            
-            // Aplicar distorsión anómala
-            const noiseFactor = 0.15;
-            [bodyMesh, topSphere, bottomSphere].forEach(mesh => {
-                const positionAttribute = mesh.geometry.getAttribute('position');
-                const positions = positionAttribute.array;
-                for (let i = 0; i < positions.length; i += 3) {
-                    positions[i] += (Math.random() - 0.5) * noiseFactor;
-                    positions[i+1] += (Math.random() - 0.5) * noiseFactor;
-                    positions[i+2] += (Math.random() - 0.5) * noiseFactor;
-                }
-                positionAttribute.needsUpdate = true;
-                mesh.geometry.computeVertexNormals();
-            });
-            
-            group.rotation.x = Math.PI / 2;
-            return group;
-        }
-
-        /**
-         * CORRECCIÓN: Detección robusta de WebGL
-         */
-        function checkWebGLSupport() {
-            try {
-                const canvas = document.createElement('canvas');
-                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-                if (!gl) return false;
-                
-                // Verificar que el contexto es funcional
-                const supported = gl.getParameter(gl.VERSION);
-                return !!supported;
-            } catch (e) {
-                return false;
-            }
-        }
-
-        /**
-         * NUEVO: Sistema de fallback Canvas 2D
-         * Renderiza una representación visual alternativa sin WebGL
-         */
-        function initFallback() {
-            fallbackCanvas = document.getElementById('3d-fallback');
-            if (!fallbackCanvas) return;
-            
-            fallbackCanvas.classList.remove('hidden');
-            fallbackCanvas.width = fallbackCanvas.offsetWidth;
-            fallbackCanvas.height = fallbackCanvas.offsetHeight;
-            
-            fallbackContext = fallbackCanvas.getContext('2d');
-            if (!fallbackContext) return;
-            
-            // Ocultar contenedor 3D
-            if (container) container.style.display = 'none';
-            
-            // Iniciar animación 2D
-            animateFallback();
-        }
-
-        function animateFallback() {
-            if (!fallbackContext || !fallbackCanvas) return;
-            
-            const ctx = fallbackContext;
-            const w = fallbackCanvas.width;
-            const h = fallbackCanvas.height;
-            const centerX = w / 2;
-            const centerY = h / 2;
-            
-            // Limpiar canvas
-            ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--bg-color') || '#f4f4f5';
-            ctx.fillRect(0, 0, w, h);
-            
-            // Campo de estrellas
-            ctx.fillStyle = '#ffffff';
-            for (let i = 0; i < 100; i++) {
-                const x = (Math.sin(i * 0.5 + fallbackRotation * 0.1) * w/2 + centerX) % w;
-                const y = (Math.cos(i * 0.3 + fallbackRotation * 0.1) * h/2 + centerY) % h;
-                ctx.fillRect(x, y, 1, 1);
-            }
-            
-            // Objeto central (elipse rotante)
-            ctx.save();
-            ctx.translate(centerX, centerY);
-            ctx.rotate(fallbackRotation);
-            
-            // Sombra
-            ctx.shadowColor = 'rgba(59, 130, 246, 0.5)';
-            ctx.shadowBlur = 20;
-            
-            // Gradiente metálico
-            const gradient = ctx.createLinearGradient(-80, -150, 80, 150);
-            gradient.addColorStop(0, '#e0e0e0');
-            gradient.addColorStop(0.5, '#ffffff');
-            gradient.addColorStop(1, '#b0b0b0');
-            
-            ctx.fillStyle = gradient;
-            ctx.strokeStyle = '#3b82f6';
-            ctx.lineWidth = 2;
-            
-            // Forma elongada (simulando el objeto)
-            ctx.beginPath();
-            ctx.ellipse(0, 0, 40, 120, 0, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.stroke();
-            
-            // Detalles superficiales
-            ctx.fillStyle = 'rgba(100, 100, 100, 0.3)';
-            for (let i = 0; i < 5; i++) {
-                const offset = (i - 2) * 30;
-                ctx.beginPath();
-                ctx.ellipse(offset * 0.3, offset, 30, 15, 0, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            
-            ctx.restore();
-            
-            // Texto informativo
-            ctx.fillStyle = document.documentElement.classList.contains('dark') ? '#ffffff' : '#000000';
-            ctx.font = '14px Inter, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('Representación visual alternativa de 3i/Atlas', centerX, h - 20);
-            ctx.font = '12px Inter, sans-serif';
-            ctx.fillStyle = '#3b82f6';
-            ctx.fillText('(WebGL no disponible - Modo 2D)', centerX, h - 5);
-            
-            fallbackRotation += 0.01;
-            requestAnimationFrame(animateFallback);
-        }
-
-        function init() {
-            if (isInitialized) return;
-            
-            try {
-                container = document.getElementById('3d-container');
-                fallbackCanvas = document.getElementById('3d-fallback');
-                
-                // Verificar soporte WebGL PRIMERO
-                if (!checkWebGLSupport()) {
-                    console.info('WebGL no disponible. Activando fallback Canvas 2D.');
-                    initFallback();
-                    return;
-                }
-                
-                if (!container || !window.THREE) {
-                    throw new Error('Contenedor 3D o librería THREE.js no encontrados.');
-                }
-
-                scene = new THREE.Scene();
-                camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
-                camera.position.z = 3;
-
-                renderer = new THREE.WebGLRenderer({
-                    antialias: true,
-                    alpha: false,
-                    powerPreference: 'high-performance'
-                });
-                renderer.setClearColor(0x000000, 1);
-                renderer.setSize(container.clientWidth, container.clientHeight);
-                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-                container.appendChild(renderer.domElement);
-
-                // Crear geometría corregida
-                object3D = createAnomalousGeometry();
-                const material = new THREE.MeshStandardMaterial({
-                    color: 0xcccccc,
-                    metalness: 0.9,
-                    roughness: 0.2,
-                });
-                object3D.traverse(child => {
-                    if (child instanceof THREE.Mesh) {
-                        child.material = material;
-                    }
-                });
-                scene.add(object3D);
-
-                const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
-                scene.add(ambientLight);
-                const pointLight = new THREE.PointLight(0xffffff, 1, 100);
-                pointLight.position.set(5, 5, 5);
-                scene.add(pointLight);
-
-                createStarField();
-                setupInteractionControls();
-                
-                isInitialized = true;
-                startAnimation();
-                
-                console.info('✅ Modelo 3D inicializado correctamente (WebGL).');
-            } catch (error) {
-                console.error('Error al inicializar Three.js:', error);
-                initFallback();
-            }
-        }
-
-        function setupInteractionControls() {
-            let isDragging = false;
-            let previousMousePosition = { x: 0, y: 0 };
-            
-            const onPointerDown = (e) => {
-                isDragging = true;
-                previousMousePosition = getPointerPosition(e);
-            };
-            
-            const onPointerUp = () => isDragging = false;
-            
-            const onPointerMove = (e) => {
-                if (!isDragging || !object3D) return;
-                const currentPosition = getPointerPosition(e);
-                const deltaMove = {
-                    x: currentPosition.x - previousMousePosition.x,
-                    y: currentPosition.y - previousMousePosition.y
+                script.onload = () => {
+                    const controlsScript = document.createElement('script');
+                    controlsScript.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js';
+                    document.head.appendChild(controlsScript);
+                    controlsScript.onload = startThreeJSScene;
                 };
-                object3D.rotation.y += deltaMove.x * 0.01;
-                object3D.rotation.x += deltaMove.y * 0.01;
-                previousMousePosition = currentPosition;
-            };
-            
-            const getPointerPosition = (e) => {
-                const touch = e.touches ? e.touches[0] : e;
-                return { x: touch.clientX, y: touch.clientY };
-            };
-            
-            container.addEventListener('mousedown', onPointerDown);
-            container.addEventListener('touchstart', onPointerDown, { passive: true });
-            document.addEventListener('mouseup', onPointerUp);
-            document.addEventListener('touchend', onPointerUp);
-            container.addEventListener('mousemove', onPointerMove);
-            container.addEventListener('touchmove', onPointerMove, { passive: true });
-            container.addEventListener('mouseleave', onPointerUp);
-        }
-
-        function createStarField() {
-            const starVertices = [];
-            for (let i = 0; i < 5000; i++) {
-                // CORRECCIÓN: THREE.Math en lugar de THREE.MathUtils (r128)
-                const x = THREE.Math.randFloatSpread(200);
-                const y = THREE.Math.randFloatSpread(200);
-                const z = THREE.Math.randFloatSpread(200);
-                starVertices.push(x, y, z);
             }
-            
-            const starGeometry = new THREE.BufferGeometry();
-            starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
-            const starMaterial = new THREE.PointsMaterial({
-                color: 0xffffff,
-                size: 0.1,
-                sizeAttenuation: true
-            });
-            stars = new THREE.Points(starGeometry, starMaterial);
-            scene.add(stars);
+        } else {
+            startThreeJSScene();
         }
-
-        function animate() {
-            if (!isAnimating || !renderer) return;
-            animationFrameId = requestAnimationFrame(animate);
-            if (document.hidden) return;
-
-            if (object3D) {
-                object3D.rotation.x += 0.001;
-                object3D.rotation.y += 0.002;
-            }
-            if (stars) {
-                stars.rotation.y += 0.0001;
-            }
-            renderer.render(scene, camera);
-        }
-
-        function startAnimation() {
-            if (!isAnimating && isInitialized && renderer) {
-                isAnimating = true;
-                animate();
-            }
-        }
-
-        function pauseAnimation() {
-            isAnimating = false;
-            if (animationFrameId) {
-                cancelAnimationFrame(animationFrameId);
-                animationFrameId = null;
-            }
-        }
-
-        function handleResize() {
-            if (!isInitialized || !renderer || !camera || !container) return;
-            const width = container.clientWidth;
-            const height = container.clientHeight;
-            camera.aspect = width / height;
-            camera.updateProjectionMatrix();
-            renderer.setSize(width, height);
-        }
-
-        function dispose() {
-            pauseAnimation();
-            if (object3D) {
-                object3D.traverse(child => {
-                    if (child instanceof THREE.Mesh) {
-                        if (child.geometry) child.geometry.dispose();
-                        if (child.material) child.material.dispose();
-                    }
-                });
-                scene.remove(object3D);
-            }
-            if (stars) {
-                if (stars.geometry) stars.geometry.dispose();
-                if (stars.material) stars.material.dispose();
-                scene.remove(stars);
-            }
-            if (renderer) {
-                renderer.dispose();
-                renderer.forceContextLoss();
-                if (renderer.domElement && container) {
-                    try {
-                        container.removeChild(renderer.domElement);
-                    } catch (e) {
-                        // Ignorar si el DOM ya no está
-                    }
-                }
-            }
-            isInitialized = false;
-        }
-
-        return { loadThreeJS, init, startAnimation, pauseAnimation, handleResize, dispose };
-    })();
-
-    // ============================================
-    // MÓDULO: Sistema de Temas (Dark Mode)
-    // ============================================
-    const ThemeModule = (() => {
-        const toggleButton = document.getElementById('dark-mode-toggle');
-        const sunIcon = document.getElementById('sun-icon');
-        const moonIcon = document.getElementById('moon-icon');
-
-        function applyTheme(theme) {
-            const isDark = theme === 'dark';
-            document.documentElement.classList.toggle('dark', isDark);
-            if (sunIcon && moonIcon) {
-                sunIcon.style.display = isDark ? 'none' : 'block';
-                moonIcon.style.display = isDark ? 'block' : 'none';
-            }
-            if (toggleButton) {
-                toggleButton.setAttribute('aria-pressed', isDark ? 'true' : 'false');
-            }
-            try {
-                localStorage.setItem(CONFIG.THEME_STORAGE_KEY, theme);
-            } catch (e) {
-                console.warn('No se pudo guardar la preferencia de tema:', e);
-            }
-        }
-
-        function getSavedTheme() {
-            try {
-                const saved = localStorage.getItem(CONFIG.THEME_STORAGE_KEY);
-                if (saved) return saved;
-            } catch (e) { /* Ignorar */ }
-            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        }
-
-        function toggleTheme() {
-            const newTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
-            applyTheme(newTheme);
-        }
-
-        function init() {
-            applyTheme(getSavedTheme());
-            if (toggleButton) {
-                toggleButton.addEventListener('click', toggleTheme);
-            }
-        }
-        
-        return { init };
-    })();
-
-    // ============================================
-    // MÓDULO: Animaciones de Scroll
-    // ============================================
-    const ScrollAnimationModule = (() => {
-        let observer = null;
-        
-        function init() {
-            const sections = document.querySelectorAll('.fade-in-section');
-            if (!sections.length || !('IntersectionObserver' in window)) return;
-            
-            observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('is-visible');
-                        observer.unobserve(entry.target);
-                    }
-                });
-            }, { threshold: CONFIG.OBSERVER_THRESHOLD });
-            
-            sections.forEach(section => observer.observe(section));
-        }
-        
-        function destroy() {
-            if (observer) observer.disconnect();
-        }
-        
-        return { init, destroy };
-    })();
-
-    // ============================================
-    // MÓDULO: Lazy Loading del Modelo 3D
-    // ============================================
-    const LazyLoadModule = (() => {
-        let observer = null;
-        let isLoaded = false;
-        
-        function init() {
-            const target = document.querySelector('[data-3d-target]');
-            if (!target) return;
-
-            if (!('IntersectionObserver' in window)) {
-                (async () => {
-                    try {
-                        await ThreeDModule.loadThreeJS();
-                        ThreeDModule.init();
-                    } catch (e) {
-                        console.error('Error cargando Three.js:', e);
-                    }
-                })();
-                return;
-            }
-            
-            observer = new IntersectionObserver(async (entries) => {
-                for (const entry of entries) {
-                    if (entry.isIntersecting && !isLoaded) {
-                        isLoaded = true;
-                        observer.disconnect();
-                        try {
-                            await ThreeDModule.loadThreeJS();
-                            ThreeDModule.init();
-                        } catch (error) {
-                            console.error('Error cargando modelo 3D:', error);
-                        }
-                    }
-                }
-            }, { rootMargin: '100px' });
-            
-            observer.observe(target);
-        }
-        
-        return { init };
-    })();
-
-    // ============================================
-    // MÓDULO: Feed de Datos en Vivo
-    // ============================================
-    const UpdatesModule = (() => {
-        const feedContainer = document.getElementById('live-data-feed');
-        const mockUpdates = [
-            { type: "ALERTA-KEK", msg: "Variación de brillo (0.15mag) detectada. (ID: K-881)", color: "text-red-400" },
-            { type: "DATO-ESA", msg: "Confirmación de trayectoria. Excentricidad: 3.102. (ID: E-102)", color: "text-blue-300" },
-            { type: "ANALISIS-G", msg: "Polarimetría sugiere superficie metálica irregular. (ID: G-042)", color: "text-yellow-300" },
-            { type: "PAPER-ARXIV", msg: "Publicado estudio sobre desgasificación de sodio. (ID: 2503.112)", color: "text-green-400" }
-        ];
-        let updateIndex = 0;
-        let intervalId = null;
-
-        function addUpdate(update) {
-            if (!feedContainer) return;
-            const div = document.createElement('div');
-            const typeSpan = document.createElement('span');
-            typeSpan.className = `font-semibold ${update.color} mr-2`;
-            typeSpan.textContent = `[${update.type}]`;
-            div.appendChild(typeSpan);
-            div.appendChild(document.createTextNode(` ${update.msg}`));
-            feedContainer.prepend(div);
-            
-            while (feedContainer.children.length > CONFIG.MAX_UPDATES_VISIBLE) {
-                feedContainer.removeChild(feedContainer.lastChild);
-            }
-        }
-
-        function addCustomUpdate(update) {
-            addUpdate(update);
-        }
-
-        function start() {
-            if (intervalId) return;
-            intervalId = setInterval(() => {
-                addUpdate(mockUpdates[updateIndex]);
-                updateIndex = (updateIndex + 1) % mockUpdates.length;
-            }, CONFIG.UPDATE_INTERVAL_MS);
-        }
-
-        function stop() {
-            if (intervalId) clearInterval(intervalId);
-            intervalId = null;
-        }
-
-        return { start, stop, addCustomUpdate };
-    })();
-
-    // ============================================
-    // MÓDULO: Modales de Alerta
-    // ============================================
-    const AppModals = (() => {
-        const modal = document.getElementById('alert-modal');
-        const modalContent = document.getElementById('modal-content');
-        const modalMessage = document.getElementById('modal-message');
-        const closeBtn = document.getElementById('modal-close-btn');
-
-        function show(message) {
-            if (!modal) return;
-            modalMessage.textContent = message;
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                modalContent.classList.add('opacity-100', 'scale-100');
-                modalContent.classList.remove('opacity-0', 'scale-95');
-            }, 10);
-        }
-
-        function hide() {
-            if (!modal) return;
-            modalContent.classList.remove('opacity-100', 'scale-100');
-            modalContent.classList.add('opacity-0', 'scale-95');
-            setTimeout(() => modal.classList.add('hidden'), 300);
-        }
-
-        function init() {
-            if (closeBtn) closeBtn.addEventListener('click', hide);
-            if (modal) modal.addEventListener('click', (e) => {
-                if (e.target === modal) hide();
-            });
-        }
-        
-        return { showAlert: show, init };
-    })();
-
-    // ============================================
-    // MÓDULO: Utilidades
-    // ============================================
-    const Utils = (() => {
-        function debounce(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(timeout);
-                    func(...args);
-                };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-            };
-        }
-        
-        function smoothScrollTo(targetId) {
-            const element = document.getElementById(targetId);
-            if (element) {
-                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        }
-        
-        return { debounce, smoothScrollTo };
-    })();
-
-    // ============================================
-    // MÓDULO: Observador de Visibilidad 3D
-    // ============================================
-    const VisibilityObserverModule = (() => {
-        let observer = null;
-        
-        function init() {
-            const container = document.getElementById('3d-container');
-            if (!container || !('IntersectionObserver' in window)) return;
-            
-            observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        ThreeDModule.startAnimation();
-                    } else {
-                        ThreeDModule.pauseAnimation();
-                    }
-                });
-            }, { threshold: 0.1 });
-            
-            observer.observe(container);
-        }
-        
-        return { init };
-    })();
-
-    // ============================================
-    // INICIALIZACIÓN PRINCIPAL
-    // ============================================
-    function initializeApp() {
-        ThemeModule.init();
-        ScrollAnimationModule.init();
-        LazyLoadModule.init();
-        VisibilityObserverModule.init();
-        UpdatesModule.start();
-        AppModals.init();
-
-        // Handler de Resize con Debouncing
-        const debouncedResize = Utils.debounce(ThreeDModule.handleResize, CONFIG.RESIZE_DEBOUNCE_MS);
-        window.addEventListener('resize', debouncedResize);
-
-        // Botón "Explorar"
-        const exploreBtn = document.getElementById('explore-btn');
-        if (exploreBtn) {
-            exploreBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                Utils.smoothScrollTo('dashboard');
-            });
-        }
-        
-        // Botón "Logout"
-        const logoutBtn = document.getElementById('logout-btn');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', () => {
-                AppModals.showAlert("Has cerrado la sesión. Serías redirigido a la página de login.");
-            });
-        }
-
-        // Formulario de Envío de Datos
-        const submissionForm = document.getElementById('data-submission-form');
-        const formResponse = document.getElementById('form-response');
-
-        if (submissionForm && formResponse) {
-            submissionForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const formData = new FormData(submissionForm);
-                const observatory = formData.get('observatory');
-                const value = formData.get('data-value');
-                const type = formData.get('data-type');
-
-                if (!observatory || !value) {
-                    formResponse.textContent = "Error: Observatorio y Valor son requeridos.";
-                    formResponse.className = "mt-4 p-4 rounded-md text-center bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200 block";
-                    return;
-                }
-                
-                formResponse.textContent = `Éxito: Datos de '${observatory}' recibidos. Procesando...`;
-                formResponse.className = "mt-4 p-4 rounded-md text-center bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200 block";
-                
-                UpdatesModule.addCustomUpdate({
-                    type: `DATO-${observatory.substring(0, 4).toUpperCase()}`,
-                    msg: `[${type}] reporta: ${value}`,
-                    color: "text-cyan-300"
-                });
-
-                submissionForm.reset();
-                setTimeout(() => {
-                    formResponse.className = "mt-4 p-4 rounded-md text-center hidden";
-                }, 4000);
-            });
-        }
-
-        // Carga diferida del iFrame
-        window.addEventListener('load', () => {
-            const videoFrame = document.getElementById('youtube-hero-video');
-            if (videoFrame && videoFrame.dataset.src) {
-                videoFrame.src = videoFrame.dataset.src;
-            }
-        });
-
-        // Limpieza de recursos al salir
-        window.addEventListener('beforeunload', () => {
-            UpdatesModule.stop();
-            ScrollAnimationModule.destroy();
-            ThreeDModule.dispose();
-        });
-
-        console.info('✅ Panel de Análisis 3i/Atlas inicializado correctamente.');
     }
 
-    // ============================================
-    // EJECUCIÓN
-    // ============================================
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initializeApp);
-    } else {
-        initializeApp();
+    /**
+     * Construye la escena 3D una vez que Three.js está listo.
+     */
+    function startThreeJSScene() {
+        trackerInitialized = true;
+        
+        // 1. Escena
+        scene = new THREE.Scene();
+        clock = new THREE.Clock(); // Inicialización segura
+
+        // 2. Cámara (¡Posición corregida!)
+        camera = new THREE.PerspectiveCamera(75, trackerMapContainer.clientWidth / trackerMapContainer.clientHeight, 0.1, 1000);
+        
+        /* *** AUDITORÍA DE INGENIERO (FIX 3D v2.3) ***
+          POR QUÉ: La cámara estaba muy cerca (z=15) y estática.
+          PARA QUÉ: La movemos para atrás (z=40) para que tenga
+          una buena vista inicial de la órbita.
+        */
+        camera.position.z = 40;
+        camera.position.y = 10;
+
+        // 3. Renderer
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(trackerMapContainer.clientWidth, trackerMapContainer.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        trackerMapContainer.appendChild(renderer.domElement);
+
+        /* *** AUDITORÍA DE INGENIERO (NUEVO VISOR 3D v2.3) ***
+          POR QUÉ: Para que el visor sea interactivo.
+          PARA QUÉ: Inicializamos los OrbitControls, vinculando la
+          cámara con las acciones del mouse en el 'renderer'.
+        */
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true; // Efecto de "inercia" suave
+        controls.dampingFactor = 0.05;
+        controls.minDistance = 5; // Límite de zoom (para no meterse "adentro")
+        controls.maxDistance = 100; // Límite de zoom (para no irse muy lejos)
+
+        // 4. Luces (El "Sol")
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+        scene.add(ambientLight);
+        sunLight = new THREE.DirectionalLight(0xffffff, 3.0);
+        sunLight.position.set(10, 5, 10);
+        scene.add(sunLight);
+
+        // 5. Creación del 3i/atlas (Núcleo, Coma, Cola)
+        nucleus = createNucleus();
+        coma = createComa();
+        tailParticles = createTail();
+        nucleus.add(coma);
+        nucleus.add(tailParticles);
+        scene.add(nucleus);
+
+        // 6. Creación de la Órbita
+        orbit = createOrbit();
+        scene.add(orbit);
+
+        // 7. Campo de Estrellas
+        starField = createStarfield();
+        scene.add(starField);
+
+        // 8. Loop de Animación
+        animateTracker();
+
+        // 9. Responsive
+        window.addEventListener('resize', onWindowResize);
     }
 
-})();
+    /**
+     * EXPERTO 3D: Crea el núcleo rocoso procedural.
+     */
+    function createNucleus() {
+        const geometry = new THREE.IcosahedronGeometry(1, 5);
+        const positionAttribute = geometry.getAttribute('position');
+        const vertex = new THREE.Vector3();
+        for (let i = 0; i < positionAttribute.count; i++) {
+            vertex.fromBufferAttribute(positionAttribute, i);
+            const noise = 0.2 + (Math.random() - 0.5) * 0.15;
+            vertex.normalize().multiplyScalar(1 + noise);
+            positionAttribute.setXYZ(i, vertex.x, vertex.y, vertex.z);
+        }
+        geometry.computeVertexNormals();
+        const material = new THREE.MeshStandardMaterial({
+            color: 0x888888,
+            roughness: 0.9,
+            metalness: 0.1
+        });
+        return new THREE.Mesh(geometry, material);
+    }
+
+    /**
+     * EXPERTO 3D: Crea la coma (atmósfera de gas).
+     */
+    function createComa() {
+        const geometry = new THREE.SphereGeometry(2.5, 32, 32); 
+        const material = new THREE.MeshBasicMaterial({
+            color: 0x88ffff,
+            transparent: true,
+            opacity: 0.2,
+            blending: THREE.AdditiveBlending
+        });
+        return new THREE.Mesh(geometry, material);
+    }
+
+    /**
+     * EXPERTO 3D: Crea la cola del sistema de partículas.
+     */
+    function createTail() {
+        const particleCount = 5000;
+        const vertices = [];
+        for (let i = 0; i < particleCount; i++) {
+            const x = 0;
+            const y = (Math.random() - 0.5) * 0.5;
+            const z = (Math.random() - 1) * 10;
+            vertices.push(x, y, z);
+        }
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+        const material = new THREE.PointsMaterial({
+            color: 0x88ffff,
+            size: 0.05,
+            transparent: true,
+            opacity: 0.5,
+            blending: THREE.AdditiveBlending
+        });
+        return new THREE.Points(geometry, material);
+    }
+
+    /**
+     * EXPERTO 3D: Crea la línea de la órbita.
+     */
+    function createOrbit() {
+        const curve = new THREE.EllipseCurve(
+            0, 0,
+            30, 20, // Radios de la elipse
+            0, 2 * Math.PI,
+            false, 0
+        );
+        const points = curve.getPoints(100);
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const material = new THREE.LineBasicMaterial({
+            color: 0x007aff,
+            opacity: 0.3,
+            transparent: true
+        });
+        const orbitLine = new THREE.Line(geometry, material);
+        orbitLine.rotation.x = THREE.MathUtils.degToRad(175); // Inclinación
+        orbitLine.curve = curve;
+        return orbitLine;
+    }
+
+    /**
+     * EXPERTO 3D: Crea el campo de estrellas.
+     */
+    function createStarfield() {
+        const starVertices = [];
+        for (let i = 0; i < 10000; i++) {
+            const x = (Math.random() - 0.5) * 2000;
+            const y = (Math.random() - 0.5) * 2000;
+            const z = (Math.random() - 0.5) * 2000;
+            starVertices.push(x, y, z);
+        }
+        const starGeometry = new THREE.BufferGeometry();
+        starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+        const starMaterial = new THREE.PointsMaterial({ 
+            color: 0xffffff,
+            size: 0.1,
+            transparent: true
+        });
+        return new THREE.Points(starGeometry, starMaterial);
+    }
+
+    /**
+     * Loop de animación para el tracker (Actualizado v2.3)
+     */
+    function animateTracker() {
+        if (!trackerInitialized) return;
+        
+        requestAnimationFrame(animateTracker);
+
+        // Chequeo de seguridad robusto
+        if (!clock || !nucleus || !orbit || !tailParticles || !controls) return;
+
+        const elapsedTime = clock.getElapsedTime();
+
+        // 1. Mover el núcleo en la órbita
+        const orbitSpeed = elapsedTime * 0.1;
+        const newPosition = orbit.curve.getPointAt(orbitSpeed % 1);
+        nucleus.position.copy(newPosition).applyQuaternion(orbit.quaternion);
+
+        // 2. Orientar el núcleo/cola lejos del "Sol"
+        nucleus.lookAt(sunLight.position);
+        
+        // 3. Animar la cola de partículas (Streaming)
+        const positions = tailParticles.geometry.getAttribute('position').array;
+        const particleSpeed = 0.05;
+        for (let i = 0; i < positions.length; i += 3) {
+            positions[i + 2] += particleSpeed; 
+            positions[i] += (Math.random() - 0.5) * 0.01;
+            positions[i+1] += (Math.random() - 0.5) * 0.01;
+            if (positions[i + 2] > 0) {
+                positions[i] = 0;
+                positions[i + 1] = (Math.random() - 0.5) * 0.5;
+                positions[i + 2] = (Math.random() - 1) * 5;
+            }
+        }
+        tailParticles.geometry.attributes.position.needsUpdate = true;
+
+        // 4. Rotación del núcleo y estrellas
+        nucleus.rotation.y += 0.005;
+        starField.rotation.y += 0.0001;
+
+        /* *** AUDITORÍA DE INGENIERO (NUEVO RENDER v2.3) ***
+          POR QUÉ: Por los OrbitControls.
+          PARA QUÉ: 'controls.update()' aplica la inercia (damping)
+          y recalcula la posición de la cámara si el usuario la movió.
+          DEBE llamarse en cada frame ANTES de renderizar.
+        */
+        controls.update();
+
+        // 5. Renderizar
+        renderer.render(scene, camera);
+    }
+
+    /**
+     * Maneja el re-dimensionamiento de la ventana para el canvas 3D
+     */
+    function onWindowResize() {
+        if (!renderer || !camera) return;
+        
+        const w = trackerMapContainer.clientWidth;
+        const h = trackerMapContainer.clientHeight;
+
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+        renderer.setSize(w, h);
+    }
+
+
+    // --- MÓDULO DE SIMULACIÓN DE DATOS ---
+    function startSimulation() {
+        if (simulationInterval) return;
+        console.log("Iniciando simulación de telemetría...");
+
+        const voyagerMessages = ['...SEÑAL ESTABLE...', 'FLUCTUACIÓN DE PLASMA', 'AUMENTO RAYOS GAMMA', 'DATOS CORRUPTOS', 'RECALIBRANDO...', '...SEÑAL ESTABLE...'];
+        const statusMessages = ['MONITOREANDO', 'ALERTA LEVE', 'ESTABLE'];
+
+        simulationInterval = setInterval(() => {
+            if (!simVelocity || !simDistance || !simTime) return;
+
+            // 1. Velocidad (Random walk)
+            let velocity = parseFloat(simVelocity.innerText);
+            velocity += (Math.random() - 0.45) * 5;
+            if (velocity < 150) velocity = 150;
+            simVelocity.innerText = velocity.toFixed(2);
+
+            // 2. Distancia (Basada en velocidad)
+            let distance = parseFloat(simDistance.innerText);
+            distance -= (velocity / 1000);
+            if (distance < 0) distance = 100.0;
+            simDistance.innerText = distance.toFixed(2);
+
+            // 3. ETA (Tiempo de llegada)
+            let timeToEarth = distance / (velocity / 100);
+            simTime.innerText = `${timeToEarth.toFixed(1)}h`;
+
+            // 4. Mensajes Aleatorios
+            if (Math.random() < 0.2) {
+                simVoyager.innerText = voyagerMessages[Math.floor(Math.random() * voyagerMessages.length)];
+                simStatus.innerText = statusMessages[Math.floor(Math.random() * statusMessages.length)];
+            }
+            
+            // Efecto "blink" en status
+            if(simStatus.innerText !== 'ESTABLE') {
+                simStatus.style.color = (Math.floor(Date.now() / 500) % 2) ? 'red' : 'var(--color-primary)';
+            } else {
+                simStatus.style.color = 'var(--color-primary)';
+            }
+
+        }, 1000);
+    }
+
+    function stopSimulation() {
+        if (simulationInterval) {
+            console.log("Deteniendo simulación.");
+            clearInterval(simulationInterval);
+            simulationInterval = null;
+        }
+    }
+
+    // --- MÓDULO DE MENÚ MÓVIL ---
+    function initMobileMenu() {
+        menuToggleButton.addEventListener('click', () => {
+            mobileNav.classList.toggle('active');
+        });
+
+        const mobileLinks = mobileNav.querySelectorAll('.nav-link');
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const pageId = e.currentTarget.dataset.page;
+                if (pageId) {
+                    navigateTo(pageId);
+                }
+            });
+        });
+        mobileLogoutButton.addEventListener('click', handleLogout);
+    }
+
+
+    // --- INICIALIZACIÓN DE EVENTOS ---
+
+    // 1. Navegación Principal (Escritorio)
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const pageId = e.currentTarget.dataset.page;
+            if (pageId) {
+                navigateTo(pageId);
+            }
+        });
+    });
+
+    // 2. Toggles de Formularios (Login/Registro)
+    showRegisterLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        formLogin.classList.remove('active');
+        formRegister.classList.add('active');
+    });
+    showLoginLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        formRegister.classList.remove('active');
+        formLogin.classList.add('active');
+    });
+
+    // 3. Envíos de Formularios
+    formRegister.addEventListener('submit', handleRegister);
+    formLogin.addEventListener('submit', handleLogin);
+
+    // 4. Botón de Salir (Logout)
+    logoutButton.addEventListener('click', handleLogout);
+
+    // 5. Toggle de Tema
+    initThemeToggle();
+
+    // 6. Menú Móvil
+    initMobileMenu();
+
+    // --- PUNTO DE ENTRADA ---
+    navigateTo('page-informacion');
+    initScrollAnimations();
+
+});
