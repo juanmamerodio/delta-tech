@@ -88,6 +88,12 @@ body {
     z-index: -1; 
     overflow: hidden;
     pointer-events: none; /* No se puede clickear */
+    
+    /* (NUEVO) Poster para carga rápida */
+    /* Este es un placeholder. Si tenés un frame del video, ponelo acá */
+    background-image: url('https://placehold.co/1920x1080/0A001F/E0B0FF?text=Cargando+Simulaci%C3%B3n...');
+    background-size: cover;
+    background-position: center;
 }
 
 #video-background-wrapper::after {
@@ -260,7 +266,7 @@ main {
 .cta-button {
     padding: 0.6rem 1.25rem;
     border: none;
-    border-radius: 18px; /* Estilo iOS */
+    border-radius: 18px; /* MODIFICADO (Unificado) */
     font-weight: 600;
     text-decoration: none;
     cursor: pointer;
@@ -304,7 +310,7 @@ main {
     width: 44px;
     height: 24px;
     background-color: var(--color-primary);
-    border-radius: 12px;
+    border-radius: 18px; /* MODIFICADO (Unificado) */
     padding: 2px;
     cursor: pointer;
     position: relative;
@@ -555,7 +561,7 @@ body.dark-theme .theme-toggle-button .moon {
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     padding: 2.5rem;
-    border-radius: 20px;
+    border-radius: 18px; /* MODIFICADO (Unificado) */
     border: 1px solid var(--color-border);
     transition: all 0.3s var(--ease-out-cubic);
 }
@@ -590,7 +596,7 @@ body.dark-theme .theme-toggle-button .moon {
 .evidence-item {
     background-color: var(--color-bg);
     padding: 2rem;
-    border-radius: 20px;
+    border-radius: 18px; /* MODIFICADO (Unificado) */
     border: 1px solid var(--color-border);
     transition: all 0.4s ease;
 }
@@ -649,7 +655,7 @@ body.dark-theme .theme-toggle-button .moon {
 .item-visual {
     background-color: #111; /* Contraste fuerte */
     color: white;
-    border-radius: 20px;
+    border-radius: 18px; /* MODIFICADO (Unificado) */
     padding: 4rem 3rem;
     text-align: center;
     height: 100%;
@@ -705,7 +711,7 @@ body.dark-theme .theme-toggle-button .moon {
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     padding: 3.5rem;
-    border-radius: 20px;
+    border-radius: 18px; /* MODIFICADO (Unificado) */
     border: 1px solid var(--color-border);
     width: 100%;
     max-width: 450px;
@@ -739,7 +745,7 @@ body.dark-theme .theme-toggle-button .moon {
     padding: 1rem 1.25rem;
     background-color: var(--color-bg);
     border: 1px solid var(--color-border);
-    border-radius: 10px;
+    border-radius: 18px; /* MODIFICADO (Unificado) */
     color: var(--color-text);
     font-size: 1rem;
     font-family: var(--font-main);
@@ -804,7 +810,7 @@ body.dark-theme .theme-toggle-button .moon {
 .map-container {
     background-color: #000000; /* Mapa espacial debe ser oscuro */
     border: 1px solid var(--color-border);
-    border-radius: 20px;
+    border-radius: 18px; /* MODIFICADO (Unificado) */
     position: relative;
     overflow: hidden;
     min-height: 500px;
@@ -840,7 +846,7 @@ body.dark-theme .theme-toggle-button .moon {
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--color-border);
-    border-radius: 20px;
+    border-radius: 18px; /* MODIFICADO (Unificado) */
     padding: 2rem;
     transition: all 0.4s ease;
 }
@@ -887,7 +893,7 @@ body.dark-theme .theme-toggle-button .moon {
     position: relative;
     aspect-ratio: 16 / 9;
     background-color: #ccc;
-    border-radius: 10px;
+    border-radius: 18px; /* MODIFICADO (Unificado) */
     overflow: hidden;
     display: flex;
     align-items: center;
