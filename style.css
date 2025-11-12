@@ -68,24 +68,24 @@ html {
 
 body {
     font-family: var(--font-main);
-    background-color: var(--color-bg); /* <-- MODIFICADO DE VUELTA */
+    background-color: var(--color-bg); 
     color: var(--color-text);
     line-height: 1.65;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
     /* Transición de tema */
-    transition: background-color 0.4s ease, color 0.4s ease; /* <-- MODIFICADO DE VUELTA */
+    transition: background-color 0.4s ease, color 0.4s ease; 
 }
 
 /* --- (NUEVO) Video Background --- */
 #video-background-wrapper {
-    position: absolute; /* <-- MODIFICADO (antes fixed) */
+    position: absolute; 
     top: 0;
     left: 0;
-    width: 100%; /* <-- MODIFICADO (antes 100vw) */
-    height: 100%; /* <-- MODIFICADO (antes 100vh) */
-    z-index: -1; /* <-- MODIFICADO (antes -100) */
+    width: 100%; 
+    height: 100%; 
+    z-index: -1; 
     overflow: hidden;
     pointer-events: none; /* No se puede clickear */
 }
@@ -108,16 +108,36 @@ body.dark-theme #video-background-wrapper::after {
     background: rgba(0, 0, 0, 0.4);
 }
 
+/*
+  *** EL ARREGLO ESTÁ ACÁ ***
+  Este es el truco "Cover" para iframes.
+  1. Centramos el iframe.
+  2. Le decimos que tenga un TAMAÑO MÍNIMO del 100% del contenedor.
+  3. Le FORZAMOS la proporción 16:9.
+  
+  CSS entonces calcula:
+  - "Necesito 100% de alto (90vh) Y 100% de ancho".
+  - "Pero también necesito ser 16:9".
+  - "Ok, para cubrir 90vh de alto en 16:9, necesito (90*16/9) = 160vh de ancho."
+  - El iframe se hace GIGANTE (160vh x 90vh) y se centra.
+  - El .hero (90vw x 90vh) lo RECORTA.
+  - Resultado: Cero barras negras.
+*/
 #video-background-wrapper iframe {
     position: absolute;
     top: 50%;
     left: 50%;
+    transform: translate(-50%, -50%);
+
+    /* La magia para el "Cover": */
     min-width: 100%;
     min-height: 100%;
-    width: auto;
-    height: auto;
-    transform: translate(-50%, -50%);
     aspect-ratio: 16 / 9;
+    
+    /* El width/height auto ya no son necesarios con aspect-ratio */
+    /* width: auto; */
+    /* height: auto; */
+
     z-index: 0;
 }
 /* --- Fin Video Background --- */
@@ -153,14 +173,13 @@ a:hover {
 }
 
 
-/* --- Layout General y Contenedor --- */
+/* --- Layout General y Contenedo --- */
 .container {
     width: 90%;
     max-width: 1200px;
     margin: 0 auto;
 }
 
-/* --- (NUEVO) Aplicar el fondo principal al contenido <main> --- */
 main {
     /* (REGLAS ELIMINADAS, el fondo vuelve al body) */
 }
@@ -230,11 +249,7 @@ main {
     gap: 2rem;
 }
 
-/* *** AUDITORÍA DE INGENIERO (CAMBIO CSS 1 de 7) ***
-  POR QUÉ: Para el responsive profesional.
-  PARA QUÉ: Estos son los controles de sesión para ESCRITORIO.
-  Serán ocultados en móvil por una media query.
-*/
+/* *** AUDITORÍA DE INGENIERO (CAMBIO CSS 1 de 7) *** */
 .session-controls-desktop {
     display: flex;
     gap: 1rem; /* Un poco menos de espacio que los nav-links */
@@ -306,12 +321,7 @@ main {
     transition: transform 0.4s var(--ease-out-cubic), opacity 0.3s ease;
 }
 
-/* *** AUDITORÍA DE INGENIERO (CAMBIO CSS 2 de 7) ***
-  POR QUÉ: Tus links a 'sol.png' y 'luna-estrellas.png' no funcionarán 
-  en mi sistema (o en cualquier otro) porque son archivos locales.
-  PARA QUÉ: Revierto a los SVGs inline (auto-contenidos) que 
-  funcionan siempre y no requieren archivos externos.
-*/
+/* *** AUDITORÍA DE INGENIERO (CAMBIO CSS 2 de 7) *** */
 .theme-toggle-button .sun {
     left: 2px;
     background-color: #fff;
@@ -349,10 +359,7 @@ body.dark-theme .theme-toggle-button .moon {
     opacity: 1;
 }
 
-/* *** AUDITORÍA DE INGENIERO (CAMBIO CSS 3 de 7) ***
-  POR QUÉ: Para el responsive profesional.
-  PARA QUÉ: Estilos para el botón hamburguesa. Oculto por defecto.
-*/
+/* *** AUDITORÍA DE INGENIERO (CAMBIO CSS 3 de 7) *** */
 .menu-toggle-button {
     display: none; /* Oculto en escritorio */
     width: 28px;
@@ -371,11 +378,7 @@ body.dark-theme .theme-toggle-button .moon {
     transition: all 0.3s ease;
 }
 
-/* *** AUDITORÍA DE INGENIERO (CAMBIO CSS 4 de 7) ***
-  POR QUÉ: Para el responsive profesional.
-  PARA QUÉ: Estilos para el panel de navegación móvil.
-  Está oculto (opacity: 0) y fuera de la pantalla (transform).
-*/
+/* *** AUDITORÍA DE INGENIERO (CAMBIO CSS 4 de 7) *** */
 .mobile-nav {
     position: fixed;
     top: 0;
@@ -438,10 +441,7 @@ body.dark-theme .theme-toggle-button .moon {
     padding: 1rem;
 }
 
-/* *** AUDITORÍA DE INGENIERO (CAMBIO CSS 5 de 7) ***
-  POR QUÉ: Para la animación de la hamburguesa.
-  PARA QUÉ: Anima el botón a una 'X' cuando el menú está activo.
-*/
+/* *** AUDITORÍA DE INGENIERO (CAMBIO CSS 5 de 7) *** */
 .mobile-nav.active + .site-header .menu-toggle-button span:nth-child(1) {
     transform: translateY(10.5px) rotate(45deg);
 }
@@ -454,7 +454,7 @@ body.dark-theme .theme-toggle-button .moon {
 
 /* --- Página 1: Información --- */
 .hero {
-    position: relative; /* <-- (NUEVO) Para anclar el video */
+    position: relative; /* (NUEVO) Para anclar el video */
     height: 90vh;
     min-height: 600px;
     display: flex;
@@ -623,11 +623,7 @@ body.dark-theme .theme-toggle-button .moon {
     align-items: center;
 }
 
-/* *** AUDITORÍA DE INGENIERO (CAMBIO CSS 6 de 7) ***
-  POR QUÉ: Para mejorar el diseño alternado en escritorio.
-  PARA QUÉ: Agrego una media query para que en pantallas grandes (desktop)
-  los items SÍ se alternen 50/50, como un ingeniero lo diseñaría.
-*/
+/* *** AUDITORÍA DE INGENIERO (CAMBIO CSS 6 de 7) *** */
 @media (min-width: 769px) {
     .alternating-item {
         grid-template-columns: 1fr 1fr; /* 50/50 en desktop */
@@ -817,7 +813,7 @@ body.dark-theme .theme-toggle-button .moon {
       POR QUÉ: Los nuevos 'OrbitControls' 3D.
       PARA QUÉ: Cambia el cursor a "agarrar" para indicarle
       al usuario que el visor es interactivo.
-    */
+    /* *** AUDITORÍA DE INGENIERO (NUEVO CSS) *** */
     cursor: grab;
 }
 .map-container:active {
@@ -972,11 +968,7 @@ footer.site-footer .container {
         gap: 0.5rem;
     }
 
-    /* *** AUDITORÍA DE INGENIERO (CAMBIO CSS 7 de 7) ***
-      POR QUÉ: Para cumplir tu pedido responsive.
-      PARA QUÉ: Ocultamos los links de nav y botones de sesión
-      de ESCRITORIO, y mostramos el botón HAMBURGUESA.
-    */
+    /* *** AUDITORÍA DE INGENIERO (CAMBIO CSS 7 de 7) *** */
     .nav-links {
         display: none; 
     }
