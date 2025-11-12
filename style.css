@@ -69,15 +69,62 @@ html {
 
 body {
     font-family: var(--font-main);
-    background-color: var(--color-bg);
+    /* background-color: var(--color-bg); <-- MODIFICADO */
+    background-color: transparent; /* El fondo ahora es el video */
     color: var(--color-text);
     line-height: 1.65;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
     /* Transición de tema */
-    transition: background-color 0.4s ease, color 0.4s ease;
+    /* transition: background-color 0.4s ease, color 0.4s ease; <-- MODIFICADO */
+    transition: color 0.4s ease;
 }
+
+/* --- (NUEVO) Video Background --- */
+#video-background-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -100; /* Detrás de todo */
+    overflow: hidden;
+    pointer-events: none; /* No se puede clickear */
+}
+
+#video-background-wrapper::after {
+    /* Overlay oscuro para legibilidad */
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6); /* Ajusta la oscuridad (0.6 = 60%) */
+    z-index: 1;
+    transition: background-color 0.4s ease;
+}
+
+body.dark-theme #video-background-wrapper::after {
+    /* Menos oscuro en tema dark */
+    background: rgba(0, 0, 0, 0.4);
+}
+
+#video-background-wrapper iframe {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    transform: translate(-50%, -50%);
+    aspect-ratio: 16 / 9;
+    z-index: 0;
+}
+/* --- Fin Video Background --- */
+
 
 h1, h2, h3, h4, h5, h6 { /* Interlineado negativo pedido */
     
@@ -115,6 +162,14 @@ a:hover {
     max-width: 1200px;
     margin: 0 auto;
 }
+
+/* --- (NUEVO) Aplicar el fondo principal al contenido <main> --- */
+/* Esto permite que header/footer floten sobre el video, pero el contenido tenga fondo */
+main {
+    background-color: var(--color-bg);
+    transition: background-color 0.4s ease;
+}
+
 
 /* --- Estructura de Página SPA --- */
 .page {
@@ -414,6 +469,7 @@ body.dark-theme .theme-toggle-button .moon {
     padding: 2rem;
     margin-top: 60px; /* Offset por header */
     overflow: hidden; /* Para animaciones */
+    background-color: transparent; /* (NUEVO) Asegurar transparencia sobre el video */
 }
 
 /* Animación de entrada para el Hero */
@@ -429,6 +485,8 @@ body.dark-theme .theme-toggle-button .moon {
     margin-bottom: 1rem;
     line-height: 1.1;
     animation-delay: 0.1s;
+    /* (NUEVO) Sombra para legibilidad sobre video */
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5); 
 }
 
 .hero p {
@@ -438,6 +496,8 @@ body.dark-theme .theme-toggle-button .moon {
     max-width: 800px;
     margin-bottom: 2.5rem;
     animation-delay: 0.2s;
+     /* (NUEVO) Sombra para legibilidad sobre video */
+    text-shadow: 0 1px 5px rgba(0,0,0,0.7);
 }
 
 .hero .cta-button-primary {
