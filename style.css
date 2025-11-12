@@ -1,7 +1,6 @@
 /* ---
 Proyecto 3i/atlas: Hoja de Estilo Premium (V2.1 - Auditoría de Ingeniería)
-Diseño: Experto UI/UX
-Foco: Glassmorphism, Tema Oscuro/Claro, Animaciones Premium, Corrección Responsive
+...
 --- */
 
 /* --- Variables (Tema Claro por defecto) --- */
@@ -69,26 +68,24 @@ html {
 
 body {
     font-family: var(--font-main);
-    /* background-color: var(--color-bg); <-- MODIFICADO */
-    background-color: transparent; /* El fondo ahora es el video */
+    background-color: var(--color-bg); /* <-- MODIFICADO DE VUELTA */
     color: var(--color-text);
     line-height: 1.65;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
     /* Transición de tema */
-    /* transition: background-color 0.4s ease, color 0.4s ease; <-- MODIFICADO */
-    transition: color 0.4s ease;
+    transition: background-color 0.4s ease, color 0.4s ease; /* <-- MODIFICADO DE VUELTA */
 }
 
 /* --- (NUEVO) Video Background --- */
 #video-background-wrapper {
-    position: fixed;
+    position: absolute; /* <-- MODIFICADO (antes fixed) */
     top: 0;
     left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: -100; /* Detrás de todo */
+    width: 100%; /* <-- MODIFICADO (antes 100vw) */
+    height: 100%; /* <-- MODIFICADO (antes 100vh) */
+    z-index: -1; /* <-- MODIFICADO (antes -100) */
     overflow: hidden;
     pointer-events: none; /* No se puede clickear */
 }
@@ -164,10 +161,9 @@ a:hover {
 }
 
 /* --- (NUEVO) Aplicar el fondo principal al contenido <main> --- */
-/* Esto permite que header/footer floten sobre el video, pero el contenido tenga fondo */
+/* (REGLA ELIMINADA, el fondo vuelve al body) */
 main {
-    background-color: var(--color-bg);
-    transition: background-color 0.4s ease;
+    /* transition: background-color 0.4s ease; */ /* <-- ELIMINADO */
 }
 
 
@@ -459,6 +455,7 @@ body.dark-theme .theme-toggle-button .moon {
 
 /* --- Página 1: Información --- */
 .hero {
+    position: relative; /* (NUEVO) Para anclar el video */
     height: 90vh;
     min-height: 600px;
     display: flex;
@@ -468,7 +465,7 @@ body.dark-theme .theme-toggle-button .moon {
     flex-direction: column;
     padding: 2rem;
     margin-top: 60px; /* Offset por header */
-    overflow: hidden; /* Para animaciones */
+    overflow: hidden; /* Para animaciones (Y AHORA RECORTA EL VIDEO) */
     background-color: transparent; /* (NUEVO) Asegurar transparencia sobre el video */
 }
 
