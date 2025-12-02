@@ -18,9 +18,7 @@
 </head>
 <body class="light-theme"> <!-- Tema claro por defecto -->
 
-    <!-- === FONDO DE VIDEO (MOVIDO DE AQUÍ) === -->
-
-    <!-- === ENCABEZADO PERSISTENTE === -->
+    <!-- === El footer pero de arriba, encabezado PERSISTENTE === -->
     <header class="site-header">
         <a href="#" class="logo nav-link" data-page="page-informacion">
             <img class="telescopio"src="telescopio.png" alt="Logo 3i/atlas">
@@ -33,15 +31,13 @@
                     <a class="nav-link" data-page="page-tracker">Rastreador</a>
                 </div>
             </nav>
-            
-            <!-- Controles de Sesión (Escritorio) -->
             <div class="session-controls-desktop">
                 <a id="login-button" class="cta-button cta-button-secondary nav-link" data-page="page-login">Iniciar Sesión</a>
                 <a id="unirse-button" class="cta-button cta-button-primary nav-link" data-page="page-login">Unirse al Proyecto</a>
                 <a id="logout-button" class="cta-button cta-button-secondary" style="display: none;">Salir</a>
             </div>
 
-            <!-- Toggle de Tema -->
+            <!--Tema -->
             <div id="theme-toggle" class="theme-toggle-button" title="Alternar tema">
                 <div class="sun"></div>
                 <div class="moon"></div>
@@ -62,9 +58,7 @@
     </header>
 
     <!-- 
-      *** AUDITORÍA DE INGENIERO (CAMBIO 4 de 4) ***
-      POR QUÉ: Para el responsive profesional.
-      PARA QUÉ: Menú móvil oculto.
+   menu para celulares, cuando apretas la hamburgesa
     -->
     <div class="mobile-nav" id="mobile-nav">
         <nav>
@@ -79,32 +73,26 @@
     </div>
 
 
-    <!-- === CONTENEDOR PRINCIPAL DE PÁGINAS === -->
+    <!-- paginas -->
     <main>
-
-        <!-- ============================================= -->
-        <!-- === PÁGINA 1: INFORMACIÓN Y CONCIENCIACIÓN === -->
-        <!-- ============================================= -->
+        <!--  pagina de INFO  -->
         <section id="page-informacion" class="page active">
             
             <!-- Sección Hero -->
             <section class="hero">
-                <!-- === FONDO DE VIDEO (NUEVO) (MOVIDO AQUÍ) === -->
+                <!--  FONDO  -->
                 <div id="video-background-wrapper">
                     <video id="video-background" autoplay muted loop playsinline poster="3iVideo.mp4">
                         <source src="3iVideo.mp4" type="video/mp4">
-                 
-                        Tu navegador no soporta video HTML5.
                     </video>
                 </div>
-                <!-- === FIN FONDO DE VIDEO === -->
-
+                <!--  FIN DE Fondo  -->
                 <h1>La Realidad No Es Real.</h1>
                 <p>Hemos detectado una estructura de información subyacente que redefine la física, la biología y la conciencia. Es el 3i/atlas. Y necesitamos tu ayuda.</p>
                 <a class="cta-button cta-button-primary nav-link" data-page="page-login">Únete al Proyecto</a>
             </section>
 
-            <!-- Sección 1: ¿Qué es? (Grid) -->
+            <!-- Seccio: que es? -->
             <section class="content-section">
                 <div class="container">
                     <h2>¿Qué es 3i/atlas?</h2>
@@ -126,15 +114,7 @@
                 </div>
             </section>
 
-            <!-- (NUEVA) Sección 2: Evidencia y Anomalías -->
-            
-
-            <!-- (NUEVA) Sección 3: Últimas Noticias (AGREGADO) -->
-            <!-- (ESTA SECCIÓN FUE ELIMINADA SEGÚN SOLICITUD) -->
-
-
-            <!-- Sección 3: El Peligro Humano (Diseño Alternado) -->
-            <!-- (ESTA SECCIÓN FUE REEMPLAZADA POR "LO QUE PASA AHORA") -->
+            <!-- Seccion 2: peligro -->
             <section class="content-section danger-section">
                 <div class="container">
                     <h2>Lo que pasa AHORA</h2>
@@ -182,10 +162,9 @@
                 </div>
             </section>
 
-            <!-- Sección 4: CTA Final -->
+            <!-- Seccion 4: CTA final -->
             <section class="content-section final-cta">
                 <div class="container">
-                    <!-- TEXTO ACTUALIZADO -->
                     <h2>Rastreá el 3i/Atlas con nosotros.</h2>
                     <p class="subtitle">Hicimos esta pagina con el mero hecho de rastrear este cuerpo interestelar sin tener un telescopio. La única forma de entender el sistema es observándolo.</p>
                     <a class="cta-button cta-button-primary nav-link" data-page="page-login">RASTREÁR AHORA</a>
@@ -194,9 +173,8 @@
 
         </section>
 
-        <!-- ============================================= -->
-        <!-- === PÁGINA 2: LOGIN Y REGISTRO           === -->
-        <!-- ============================================= -->
+        <!-- === 2: LOGIN Y REGISTRO-->
+
         <section id="page-login" class="page">
             <div class="login-container container">
                 <div class="login-box">
@@ -247,19 +225,19 @@
             </div>
         </section>
 
-        <!-- ============================================= -->
-        <!-- === PÁGINA 3: RASTREADOR EN VIVO (SIM)   === -->
-        <!-- ============================================= -->
+
+        <!-- === pag 3: RASTREADOR === -->
+
         <section id="page-tracker" class="page">
             <div class="container tracker-layout">
                 
-                <!-- Columna Izquierda: Mapa -->
+                <!--mapa -->
                 <div class="map-container">
-                    <!-- El JS (Three.js) se inyectará aquí -->
+                    <!-- Three.js -->
                     <div id="tracker-map"></div>
                 </div>
 
-                <!-- Columna Derecha: Sidebar -->
+                <!-- sidebar -->
                 <aside class="sidebar">
                     
                     <!-- Widget de Estado -->
@@ -276,18 +254,6 @@
                             <li><span>Ping Voyager 1:</span> <span id="sim-voyager">...</span></li>
                         </ul>
                     </div>
-                    
-                    <!-- Widget de Feeds -->
-                    <div class="feeds-widget">
-                        <h3>Feeds de Colaboradores</h3>
-                        <div class="feeds-grid">
-                            <div class="feed-item"><span>Feed 1 (En vivo)</span></div>
-                            <div class="feed-item"><span>Feed 2 (En vivo)</span></div>
-                            <div class="feed-item"><span>Feed 3 (En vivo)</span></div>
-                            <div class="feed-item"><span>Feed 4 (En vivo)</span></div>
-                        </div>
-                    </div>
-
                 </aside>
             </div>
         </section>
