@@ -384,16 +384,11 @@
     </main>
 
     <script>
-        /* --- JAVASCRIPT DE LÓGICA --- */
-        
-        // URL de tu "Base de Datos" (Google Sheet)
-        const G_SHEET_URL = 'https://script.google.com/macros/s/AKfycbxabjy4eJxZoL1qSewLRfKqvI4tn0EopsEimZhAZydmh4OA8c9Ya1gR6IH1jHHouWvv/exec';
-
-        // Variables de estado
+        // estado
         let isLoggedIn = false;
         let simulationTimer = null;
 
-        // Elementos del DOM
+        // Elementos de la pagina
         const pages = document.querySelectorAll('.page');
         const loginBtn = document.getElementById('login-btn');
         const logoutBtn = document.getElementById('logout-btn');
